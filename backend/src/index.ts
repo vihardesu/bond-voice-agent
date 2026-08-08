@@ -6,6 +6,7 @@ import { cors } from "hono/cors";
 
 import { runMigrations } from "./db/migrate.js";
 import { conciergeDoctorApp } from "./modules/concierge-doctor/index.js";
+import { level3AgentApp } from "./modules/level3-agent/index.js";
 import { speechSessionsApp } from "./modules/speech-sessions/index.js";
 import { agentsApp } from "./routes/agents.js";
 
@@ -32,6 +33,7 @@ app.get("/health", (c) => c.json({ status: "ok" }));
 app.route("/", agentsApp);
 app.route("/", speechSessionsApp);
 app.route("/", conciergeDoctorApp);
+app.route("/", level3AgentApp);
 
 app.doc("/doc", {
   openapi: "3.0.0",

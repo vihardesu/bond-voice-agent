@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ActivityHeart, ArrowRight, Headphones01 } from "@untitledui/icons";
+import { ActivityHeart, ArrowRight, Headphones01, Settings01 } from "@untitledui/icons";
 
 import { Badge } from "@/components/base/badges/badges";
 import { cx } from "@/utils/cx";
@@ -33,6 +33,19 @@ const agents = [
       "bg-[radial-gradient(circle_at_15%_25%,rgba(52,211,153,0.32),transparent_42%),radial-gradient(circle_at_85%_75%,rgba(34,211,238,0.22),transparent_38%)]",
     icon: ActivityHeart,
   },
+  {
+    href: "/level3",
+    level: "Level 3",
+    title: "Level 3 Agent",
+    subtitle: "Tunable concierge harness",
+    description:
+      "Save multiple ElevenLabs healthcare concierge variants from typed dials — persona, prompt profile, turn eagerness, voice, LLM, tools — then talk and compare with full Level 2 observability.",
+    model: "configurable · turn_v3 · client tools",
+    accent: "from-indigo-950 via-slate-900 to-amber-900",
+    panel:
+      "bg-[radial-gradient(circle_at_18%_22%,rgba(129,140,248,0.34),transparent_44%),radial-gradient(circle_at_82%_78%,rgba(251,191,36,0.22),transparent_40%)]",
+    icon: Settings01,
+  },
 ] as const;
 
 export function AgentGallery() {
@@ -61,13 +74,13 @@ export function AgentGallery() {
               Choose who you want to talk to
             </h1>
             <p className="text-lg text-tertiary">
-              Two live voice agents. Start with a raw speech-to-speech baseline, or step into a
-              fully harnessed ElevenLabs concierge experience.
+              Three live voice agents. Start with a raw speech-to-speech baseline, step into a
+              fixed ElevenLabs concierge harness, or tune and compare Level 3 variants.
             </p>
           </div>
         </header>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {agents.map((agent, index) => {
             const Icon = agent.icon;
             return (

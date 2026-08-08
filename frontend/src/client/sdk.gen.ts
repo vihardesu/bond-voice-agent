@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateAgentData, CreateAgentResponses, CreateSpeechClientSecretData, CreateSpeechClientSecretErrors, CreateSpeechClientSecretResponses, CreateSpeechSessionData, CreateSpeechSessionResponses, DeleteAgentData, DeleteAgentErrors, DeleteAgentResponses, DeleteConciergeDoctorSessionData, DeleteConciergeDoctorSessionErrors, DeleteConciergeDoctorSessionResponses, DeleteSpeechSessionData, DeleteSpeechSessionErrors, DeleteSpeechSessionResponses, EnsureConciergeDoctorAgentData, EnsureConciergeDoctorAgentErrors, EnsureConciergeDoctorAgentResponses, GetAgentData, GetAgentErrors, GetAgentResponses, GetConciergeDoctorSessionData, GetConciergeDoctorSessionErrors, GetConciergeDoctorSessionResponses, GetSpeechSessionData, GetSpeechSessionErrors, GetSpeechSessionResponses, ListAgentsData, ListAgentsResponses, ListConciergeDoctorSessionsData, ListConciergeDoctorSessionsResponses, ListSpeechSessionsData, ListSpeechSessionsResponses, MockConciergePharmacyRequestData, MockConciergePharmacyRequestResponses, MockConciergeScheduleFollowUpData, MockConciergeScheduleFollowUpResponses, StartConciergeDoctorSessionData, StartConciergeDoctorSessionErrors, StartConciergeDoctorSessionResponses, UpdateAgentData, UpdateAgentErrors, UpdateAgentResponses, UpdateConciergeDoctorSessionData, UpdateConciergeDoctorSessionErrors, UpdateConciergeDoctorSessionResponses, UpdateSpeechSessionData, UpdateSpeechSessionErrors, UpdateSpeechSessionResponses } from './types.gen';
+import type { CreateAgentData, CreateAgentResponses, CreateLevel3AgentData, CreateLevel3AgentErrors, CreateLevel3AgentResponses, CreateSpeechClientSecretData, CreateSpeechClientSecretErrors, CreateSpeechClientSecretResponses, CreateSpeechSessionData, CreateSpeechSessionResponses, DeleteAgentData, DeleteAgentErrors, DeleteAgentResponses, DeleteConciergeDoctorSessionData, DeleteConciergeDoctorSessionErrors, DeleteConciergeDoctorSessionResponses, DeleteLevel3AgentData, DeleteLevel3AgentErrors, DeleteLevel3AgentResponses, DeleteLevel3SessionData, DeleteLevel3SessionErrors, DeleteLevel3SessionResponses, DeleteSpeechSessionData, DeleteSpeechSessionErrors, DeleteSpeechSessionResponses, EnsureConciergeDoctorAgentData, EnsureConciergeDoctorAgentErrors, EnsureConciergeDoctorAgentResponses, GetAgentData, GetAgentErrors, GetAgentResponses, GetConciergeDoctorSessionData, GetConciergeDoctorSessionErrors, GetConciergeDoctorSessionResponses, GetLevel3AgentData, GetLevel3AgentErrors, GetLevel3AgentResponses, GetLevel3SessionData, GetLevel3SessionErrors, GetLevel3SessionResponses, GetSpeechSessionData, GetSpeechSessionErrors, GetSpeechSessionResponses, ListAgentsData, ListAgentsResponses, ListConciergeDoctorSessionsData, ListConciergeDoctorSessionsResponses, ListLevel3AgentsData, ListLevel3AgentsResponses, ListLevel3SessionsData, ListLevel3SessionsResponses, ListSpeechSessionsData, ListSpeechSessionsResponses, MockConciergePharmacyRequestData, MockConciergePharmacyRequestResponses, MockConciergeScheduleFollowUpData, MockConciergeScheduleFollowUpResponses, MockLevel3PharmacyRequestData, MockLevel3PharmacyRequestResponses, MockLevel3ScheduleFollowUpData, MockLevel3ScheduleFollowUpResponses, StartConciergeDoctorSessionData, StartConciergeDoctorSessionErrors, StartConciergeDoctorSessionResponses, StartLevel3SessionData, StartLevel3SessionErrors, StartLevel3SessionResponses, UpdateAgentData, UpdateAgentErrors, UpdateAgentResponses, UpdateConciergeDoctorSessionData, UpdateConciergeDoctorSessionErrors, UpdateConciergeDoctorSessionResponses, UpdateLevel3AgentData, UpdateLevel3AgentErrors, UpdateLevel3AgentResponses, UpdateLevel3SessionData, UpdateLevel3SessionErrors, UpdateLevel3SessionResponses, UpdateSpeechSessionData, UpdateSpeechSessionErrors, UpdateSpeechSessionResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -176,6 +176,108 @@ export const mockConciergePharmacyRequest = <ThrowOnError extends boolean = fals
  */
 export const mockConciergeScheduleFollowUp = <ThrowOnError extends boolean = false>(options: Options<MockConciergeScheduleFollowUpData, ThrowOnError>): RequestResult<MockConciergeScheduleFollowUpResponses, unknown, ThrowOnError> => (options.client ?? client).post<MockConciergeScheduleFollowUpResponses, unknown, ThrowOnError>({
     url: '/concierge-doctor/mocks/schedule',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List Level 3 sessions
+ */
+export const listLevel3Sessions = <ThrowOnError extends boolean = false>(options?: Options<ListLevel3SessionsData, ThrowOnError>): RequestResult<ListLevel3SessionsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListLevel3SessionsResponses, unknown, ThrowOnError>({ url: '/level3-agents/sessions', ...options });
+
+/**
+ * Delete a Level 3 session
+ */
+export const deleteLevel3Session = <ThrowOnError extends boolean = false>(options: Options<DeleteLevel3SessionData, ThrowOnError>): RequestResult<DeleteLevel3SessionResponses, DeleteLevel3SessionErrors, ThrowOnError> => (options.client ?? client).delete<DeleteLevel3SessionResponses, DeleteLevel3SessionErrors, ThrowOnError>({ url: '/level3-agents/sessions/{id}', ...options });
+
+/**
+ * Get a Level 3 session
+ */
+export const getLevel3Session = <ThrowOnError extends boolean = false>(options: Options<GetLevel3SessionData, ThrowOnError>): RequestResult<GetLevel3SessionResponses, GetLevel3SessionErrors, ThrowOnError> => (options.client ?? client).get<GetLevel3SessionResponses, GetLevel3SessionErrors, ThrowOnError>({ url: '/level3-agents/sessions/{id}', ...options });
+
+/**
+ * Update a Level 3 session
+ */
+export const updateLevel3Session = <ThrowOnError extends boolean = false>(options: Options<UpdateLevel3SessionData, ThrowOnError>): RequestResult<UpdateLevel3SessionResponses, UpdateLevel3SessionErrors, ThrowOnError> => (options.client ?? client).patch<UpdateLevel3SessionResponses, UpdateLevel3SessionErrors, ThrowOnError>({
+    url: '/level3-agents/sessions/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Mock retail pharmacy portal action
+ */
+export const mockLevel3PharmacyRequest = <ThrowOnError extends boolean = false>(options: Options<MockLevel3PharmacyRequestData, ThrowOnError>): RequestResult<MockLevel3PharmacyRequestResponses, unknown, ThrowOnError> => (options.client ?? client).post<MockLevel3PharmacyRequestResponses, unknown, ThrowOnError>({
+    url: '/level3-agents/mocks/pharmacy',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Mock provider follow-up scheduling
+ */
+export const mockLevel3ScheduleFollowUp = <ThrowOnError extends boolean = false>(options: Options<MockLevel3ScheduleFollowUpData, ThrowOnError>): RequestResult<MockLevel3ScheduleFollowUpResponses, unknown, ThrowOnError> => (options.client ?? client).post<MockLevel3ScheduleFollowUpResponses, unknown, ThrowOnError>({
+    url: '/level3-agents/mocks/schedule',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List Level 3 agents
+ */
+export const listLevel3Agents = <ThrowOnError extends boolean = false>(options?: Options<ListLevel3AgentsData, ThrowOnError>): RequestResult<ListLevel3AgentsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListLevel3AgentsResponses, unknown, ThrowOnError>({ url: '/level3-agents', ...options });
+
+/**
+ * Create a Level 3 agent from typed settings
+ */
+export const createLevel3Agent = <ThrowOnError extends boolean = false>(options: Options<CreateLevel3AgentData, ThrowOnError>): RequestResult<CreateLevel3AgentResponses, CreateLevel3AgentErrors, ThrowOnError> => (options.client ?? client).post<CreateLevel3AgentResponses, CreateLevel3AgentErrors, ThrowOnError>({
+    url: '/level3-agents',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete a Level 3 agent
+ */
+export const deleteLevel3Agent = <ThrowOnError extends boolean = false>(options: Options<DeleteLevel3AgentData, ThrowOnError>): RequestResult<DeleteLevel3AgentResponses, DeleteLevel3AgentErrors, ThrowOnError> => (options.client ?? client).delete<DeleteLevel3AgentResponses, DeleteLevel3AgentErrors, ThrowOnError>({ url: '/level3-agents/{id}', ...options });
+
+/**
+ * Get a Level 3 agent
+ */
+export const getLevel3Agent = <ThrowOnError extends boolean = false>(options: Options<GetLevel3AgentData, ThrowOnError>): RequestResult<GetLevel3AgentResponses, GetLevel3AgentErrors, ThrowOnError> => (options.client ?? client).get<GetLevel3AgentResponses, GetLevel3AgentErrors, ThrowOnError>({ url: '/level3-agents/{id}', ...options });
+
+/**
+ * Update a Level 3 agent and sync ElevenLabs
+ */
+export const updateLevel3Agent = <ThrowOnError extends boolean = false>(options: Options<UpdateLevel3AgentData, ThrowOnError>): RequestResult<UpdateLevel3AgentResponses, UpdateLevel3AgentErrors, ThrowOnError> => (options.client ?? client).patch<UpdateLevel3AgentResponses, UpdateLevel3AgentErrors, ThrowOnError>({
+    url: '/level3-agents/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Start a conversation with a Level 3 agent
+ */
+export const startLevel3Session = <ThrowOnError extends boolean = false>(options: Options<StartLevel3SessionData, ThrowOnError>): RequestResult<StartLevel3SessionResponses, StartLevel3SessionErrors, ThrowOnError> => (options.client ?? client).post<StartLevel3SessionResponses, StartLevel3SessionErrors, ThrowOnError>({
+    url: '/level3-agents/{id}/sessions/start',
     ...options,
     headers: {
         'Content-Type': 'application/json',

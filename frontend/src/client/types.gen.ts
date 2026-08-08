@@ -199,6 +199,176 @@ export type UpdateConciergeSession = {
     syncRemoteMetrics?: boolean;
 };
 
+export type Level3Session = {
+    id: number;
+    agentId: number;
+    agentDisplayName: string;
+    title: string;
+    status: 'active' | 'ended';
+    elevenLabsAgentId: string;
+    elevenLabsConversationId: string | null;
+    startedAt: string;
+    endedAt: string | null;
+    durationMs: number | null;
+    transcript: Array<Level3TranscriptEntry>;
+    clinicalContext: Level3ClinicalContext;
+    resolution: Level3Resolution;
+    events: Array<Level3ObservabilityEvent>;
+    metrics: Level3Metrics;
+    createdAt: string;
+    updatedAt: string;
+};
+
+export type Level3TranscriptEntry = {
+    role: 'user' | 'agent';
+    text: string;
+    at: string;
+};
+
+export type Level3ClinicalContext = {
+    symptom?: string;
+    duration?: string;
+    history?: string;
+    currentMedications?: string;
+    unknowns?: string;
+    notes?: string;
+};
+
+export type Level3Resolution = {
+    type: 'self_care_watch' | 'scheduled_follow_up' | 'pharmacy_request' | 'human_handoff' | 'emergency_care' | 'other';
+    summary: string;
+    confirmationId?: string;
+    reassurance?: string;
+    handoffReason?: string;
+    pharmacy?: string;
+    details?: {
+        [key: string]: unknown;
+    };
+} | null;
+
+export type Level3ObservabilityEvent = {
+    at: string;
+    type: 'status' | 'transcript' | 'ping' | 'vad' | 'interruption' | 'tool_request' | 'tool_response' | 'watch' | 'guardrail' | 'error' | 'metric' | 'mode';
+    message: string;
+    data?: {
+        [key: string]: unknown;
+    };
+};
+
+export type Level3Metrics = {
+    avgLatencyMs?: number | null;
+    latestLatencyMs?: number | null;
+    latencySampleCount?: number;
+    turnCount?: number;
+    toolCallCount?: number;
+    watchEventCount?: number;
+    interruptionCount?: number;
+    avgVadScore?: number | null;
+    elevenLabsCostCredits?: number | null;
+    elevenLabsCostUsd?: number | null;
+    callDurationSecs?: number | null;
+    charging?: unknown;
+    featuresUsage?: unknown;
+    terminationReason?: string | null;
+    analysisSummary?: string | null;
+    ttsModel?: string;
+    asrProvider?: string;
+    turnModel?: string;
+    llm?: string;
+    voicePreset?: string;
+    [key: string]: unknown;
+};
+
+export type Level3AgentApiError = {
+    error: string;
+};
+
+export type UpdateLevel3Session = {
+    title?: string;
+    status?: 'active' | 'ended';
+    endedAt?: string;
+    durationMs?: number;
+    transcript?: Array<Level3TranscriptEntry>;
+    clinicalContext?: Level3ClinicalContext;
+    resolution?: Level3Resolution;
+    events?: Array<Level3ObservabilityEvent>;
+    appendEvents?: Array<Level3ObservabilityEvent>;
+    metrics?: Level3Metrics;
+    elevenLabsConversationId?: string;
+    syncRemoteMetrics?: boolean;
+};
+
+export type Level3Agent = {
+    id: number;
+    displayName: string;
+    elevenLabsAgentId: string;
+    variantLabel: 'alpha' | 'beta' | 'pilot' | 'staging' | 'production' | 'experiment_a' | 'experiment_b';
+    communicationStyle: 'patient' | 'balanced' | 'direct';
+    explanationLevel: 'minimal' | 'concise' | 'balanced' | 'detailed' | 'thorough';
+    safetyPosture: 'conservative' | 'balanced' | 'assertive';
+    resolutionBias: 'fewest_steps' | 'thorough_intake';
+    turnEagerness: 'patient' | 'normal' | 'eager';
+    voicePreset: 'sarah' | 'rachel' | 'george' | 'brian' | 'laura';
+    ttsModel: 'eleven_flash_v2' | 'eleven_turbo_v2';
+    llm: 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gpt-4o-mini' | 'gpt-4.1-mini' | 'claude-haiku-4-5';
+    interruptionMode: 'allow' | 'ignore_backchannels' | 'protect_tools';
+    personaPreset: 'mira' | 'alex' | 'jordan' | 'sam';
+    promptProfile: 'warm_empathetic' | 'efficient_triage' | 'calm_navigator';
+    enabledTools: Array<'update_clinical_context' | 'schedule_follow_up' | 'submit_pharmacy_request' | 'confirm_next_step' | 'request_human_handoff' | 'flag_watch_event'>;
+    createdAt: string;
+    updatedAt: string;
+};
+
+export type CreateLevel3Agent = {
+    variantLabel?: 'alpha' | 'beta' | 'pilot' | 'staging' | 'production' | 'experiment_a' | 'experiment_b';
+    communicationStyle?: 'patient' | 'balanced' | 'direct';
+    explanationLevel?: 'minimal' | 'concise' | 'balanced' | 'detailed' | 'thorough';
+    safetyPosture?: 'conservative' | 'balanced' | 'assertive';
+    resolutionBias?: 'fewest_steps' | 'thorough_intake';
+    turnEagerness?: 'patient' | 'normal' | 'eager';
+    voicePreset?: 'sarah' | 'rachel' | 'george' | 'brian' | 'laura';
+    ttsModel?: 'eleven_flash_v2' | 'eleven_turbo_v2';
+    llm?: 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gpt-4o-mini' | 'gpt-4.1-mini' | 'claude-haiku-4-5';
+    interruptionMode?: 'allow' | 'ignore_backchannels' | 'protect_tools';
+    personaPreset?: 'mira' | 'alex' | 'jordan' | 'sam';
+    promptProfile?: 'warm_empathetic' | 'efficient_triage' | 'calm_navigator';
+    enabledTools?: Array<'update_clinical_context' | 'schedule_follow_up' | 'submit_pharmacy_request' | 'confirm_next_step' | 'request_human_handoff' | 'flag_watch_event'>;
+};
+
+export type UpdateLevel3Agent = {
+    variantLabel?: 'alpha' | 'beta' | 'pilot' | 'staging' | 'production' | 'experiment_a' | 'experiment_b';
+    communicationStyle?: 'patient' | 'balanced' | 'direct';
+    explanationLevel?: 'minimal' | 'concise' | 'balanced' | 'detailed' | 'thorough';
+    safetyPosture?: 'conservative' | 'balanced' | 'assertive';
+    resolutionBias?: 'fewest_steps' | 'thorough_intake';
+    turnEagerness?: 'patient' | 'normal' | 'eager';
+    voicePreset?: 'sarah' | 'rachel' | 'george' | 'brian' | 'laura';
+    ttsModel?: 'eleven_flash_v2' | 'eleven_turbo_v2';
+    llm?: 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gpt-4o-mini' | 'gpt-4.1-mini' | 'claude-haiku-4-5';
+    interruptionMode?: 'allow' | 'ignore_backchannels' | 'protect_tools';
+    personaPreset?: 'mira' | 'alex' | 'jordan' | 'sam';
+    promptProfile?: 'warm_empathetic' | 'efficient_triage' | 'calm_navigator';
+    enabledTools?: Array<'update_clinical_context' | 'schedule_follow_up' | 'submit_pharmacy_request' | 'confirm_next_step' | 'request_human_handoff' | 'flag_watch_event'>;
+};
+
+export type StartLevel3SessionResponse = {
+    session: Level3Session;
+    conversationToken: string;
+    conversationId: string;
+    dynamicVariables: {
+        communication_style: string;
+        explanation_level: string;
+        safety_posture: string;
+        resolution_bias: string;
+    };
+    enabledTools: Array<'update_clinical_context' | 'schedule_follow_up' | 'submit_pharmacy_request' | 'confirm_next_step' | 'request_human_handoff' | 'flag_watch_event'>;
+};
+
+export type StartLevel3Session = {
+    title?: string;
+    forceSyncAgent?: boolean;
+};
+
 export type ListAgentsData = {
     body?: never;
     path?: never;
@@ -649,3 +819,310 @@ export type MockConciergeScheduleFollowUpResponses = {
 };
 
 export type MockConciergeScheduleFollowUpResponse = MockConciergeScheduleFollowUpResponses[keyof MockConciergeScheduleFollowUpResponses];
+
+export type ListLevel3SessionsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/level3-agents/sessions';
+};
+
+export type ListLevel3SessionsResponses = {
+    /**
+     * All Level 3 sessions
+     */
+    200: Array<Level3Session>;
+};
+
+export type ListLevel3SessionsResponse = ListLevel3SessionsResponses[keyof ListLevel3SessionsResponses];
+
+export type DeleteLevel3SessionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/level3-agents/sessions/{id}';
+};
+
+export type DeleteLevel3SessionErrors = {
+    /**
+     * Not found
+     */
+    404: Level3AgentApiError;
+};
+
+export type DeleteLevel3SessionError = DeleteLevel3SessionErrors[keyof DeleteLevel3SessionErrors];
+
+export type DeleteLevel3SessionResponses = {
+    /**
+     * Deleted
+     */
+    204: void;
+};
+
+export type DeleteLevel3SessionResponse = DeleteLevel3SessionResponses[keyof DeleteLevel3SessionResponses];
+
+export type GetLevel3SessionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/level3-agents/sessions/{id}';
+};
+
+export type GetLevel3SessionErrors = {
+    /**
+     * Not found
+     */
+    404: Level3AgentApiError;
+};
+
+export type GetLevel3SessionError = GetLevel3SessionErrors[keyof GetLevel3SessionErrors];
+
+export type GetLevel3SessionResponses = {
+    /**
+     * Session found
+     */
+    200: Level3Session;
+};
+
+export type GetLevel3SessionResponse = GetLevel3SessionResponses[keyof GetLevel3SessionResponses];
+
+export type UpdateLevel3SessionData = {
+    body: UpdateLevel3Session;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/level3-agents/sessions/{id}';
+};
+
+export type UpdateLevel3SessionErrors = {
+    /**
+     * Not found
+     */
+    404: Level3AgentApiError;
+    /**
+     * Update failed
+     */
+    500: Level3AgentApiError;
+};
+
+export type UpdateLevel3SessionError = UpdateLevel3SessionErrors[keyof UpdateLevel3SessionErrors];
+
+export type UpdateLevel3SessionResponses = {
+    /**
+     * Session updated
+     */
+    200: Level3Session;
+};
+
+export type UpdateLevel3SessionResponse = UpdateLevel3SessionResponses[keyof UpdateLevel3SessionResponses];
+
+export type MockLevel3PharmacyRequestData = {
+    body: {
+        pharmacy: 'walgreens' | 'cvs' | 'other';
+        requestType: 'refill_status' | 'pickup_ready_check' | 'transfer_request' | 'general_question';
+        medicationName?: string;
+        details?: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/level3-agents/mocks/pharmacy';
+};
+
+export type MockLevel3PharmacyRequestResponses = {
+    /**
+     * Mock pharmacy response
+     */
+    200: {
+        confirmationId: string;
+        status: string;
+        message: string;
+    };
+};
+
+export type MockLevel3PharmacyRequestResponse = MockLevel3PharmacyRequestResponses[keyof MockLevel3PharmacyRequestResponses];
+
+export type MockLevel3ScheduleFollowUpData = {
+    body: {
+        reason: string;
+        urgency: 'routine' | 'soon' | 'urgent';
+        preferredWindow?: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/level3-agents/mocks/schedule';
+};
+
+export type MockLevel3ScheduleFollowUpResponses = {
+    /**
+     * Mock schedule response
+     */
+    200: {
+        confirmationId: string;
+        slot: string;
+        message: string;
+    };
+};
+
+export type MockLevel3ScheduleFollowUpResponse = MockLevel3ScheduleFollowUpResponses[keyof MockLevel3ScheduleFollowUpResponses];
+
+export type ListLevel3AgentsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/level3-agents';
+};
+
+export type ListLevel3AgentsResponses = {
+    /**
+     * All Level 3 agents
+     */
+    200: Array<Level3Agent>;
+};
+
+export type ListLevel3AgentsResponse = ListLevel3AgentsResponses[keyof ListLevel3AgentsResponses];
+
+export type CreateLevel3AgentData = {
+    body: CreateLevel3Agent;
+    path?: never;
+    query?: never;
+    url: '/level3-agents';
+};
+
+export type CreateLevel3AgentErrors = {
+    /**
+     * Create failed
+     */
+    500: Level3AgentApiError;
+};
+
+export type CreateLevel3AgentError = CreateLevel3AgentErrors[keyof CreateLevel3AgentErrors];
+
+export type CreateLevel3AgentResponses = {
+    /**
+     * Agent created
+     */
+    201: Level3Agent;
+};
+
+export type CreateLevel3AgentResponse = CreateLevel3AgentResponses[keyof CreateLevel3AgentResponses];
+
+export type DeleteLevel3AgentData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/level3-agents/{id}';
+};
+
+export type DeleteLevel3AgentErrors = {
+    /**
+     * Not found
+     */
+    404: Level3AgentApiError;
+};
+
+export type DeleteLevel3AgentError = DeleteLevel3AgentErrors[keyof DeleteLevel3AgentErrors];
+
+export type DeleteLevel3AgentResponses = {
+    /**
+     * Deleted
+     */
+    204: void;
+};
+
+export type DeleteLevel3AgentResponse = DeleteLevel3AgentResponses[keyof DeleteLevel3AgentResponses];
+
+export type GetLevel3AgentData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/level3-agents/{id}';
+};
+
+export type GetLevel3AgentErrors = {
+    /**
+     * Not found
+     */
+    404: Level3AgentApiError;
+};
+
+export type GetLevel3AgentError = GetLevel3AgentErrors[keyof GetLevel3AgentErrors];
+
+export type GetLevel3AgentResponses = {
+    /**
+     * Agent found
+     */
+    200: Level3Agent;
+};
+
+export type GetLevel3AgentResponse = GetLevel3AgentResponses[keyof GetLevel3AgentResponses];
+
+export type UpdateLevel3AgentData = {
+    body: UpdateLevel3Agent;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/level3-agents/{id}';
+};
+
+export type UpdateLevel3AgentErrors = {
+    /**
+     * Not found
+     */
+    404: Level3AgentApiError;
+    /**
+     * Update failed
+     */
+    500: Level3AgentApiError;
+};
+
+export type UpdateLevel3AgentError = UpdateLevel3AgentErrors[keyof UpdateLevel3AgentErrors];
+
+export type UpdateLevel3AgentResponses = {
+    /**
+     * Agent updated
+     */
+    200: Level3Agent;
+};
+
+export type UpdateLevel3AgentResponse = UpdateLevel3AgentResponses[keyof UpdateLevel3AgentResponses];
+
+export type StartLevel3SessionData = {
+    body?: StartLevel3Session;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/level3-agents/{id}/sessions/start';
+};
+
+export type StartLevel3SessionErrors = {
+    /**
+     * Agent not found
+     */
+    404: Level3AgentApiError;
+    /**
+     * Start failed
+     */
+    500: Level3AgentApiError;
+};
+
+export type StartLevel3SessionError = StartLevel3SessionErrors[keyof StartLevel3SessionErrors];
+
+export type StartLevel3SessionResponses = {
+    /**
+     * Session started
+     */
+    201: StartLevel3SessionResponse;
+};
+
+export type StartLevel3SessionResponse2 = StartLevel3SessionResponses[keyof StartLevel3SessionResponses];

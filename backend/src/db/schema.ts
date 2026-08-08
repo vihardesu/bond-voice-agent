@@ -12,3 +12,11 @@ export {
   type NewConciergeConfig,
   type NewConciergeSession,
 } from "../modules/concierge-doctor/schema.js";
+export {
+  level3Agents,
+  level3Sessions,
+  type Level3Agent,
+  type Level3Session,
+  type NewLevel3Agent,
+  type NewLevel3Session,
+} from "../modules/level3-agent/schema.js";

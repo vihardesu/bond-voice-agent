@@ -1,0 +1,40 @@
+CREATE TABLE `level3_agents` (
+	`id` integer PRIMARY KEY AUTOINCREMENT,
+	`display_name` text NOT NULL,
+	`variant_label` text DEFAULT 'alpha' NOT NULL,
+	`elevenlabs_agent_id` text NOT NULL,
+	`communication_style` text DEFAULT 'balanced' NOT NULL,
+	`explanation_level` text DEFAULT 'balanced' NOT NULL,
+	`safety_posture` text DEFAULT 'balanced' NOT NULL,
+	`resolution_bias` text DEFAULT 'fewest_steps' NOT NULL,
+	`turn_eagerness` text DEFAULT 'normal' NOT NULL,
+	`voice_preset` text DEFAULT 'sarah' NOT NULL,
+	`tts_model` text DEFAULT 'eleven_flash_v2' NOT NULL,
+	`llm` text DEFAULT 'gemini-2.5-flash' NOT NULL,
+	`interruption_mode` text DEFAULT 'ignore_backchannels' NOT NULL,
+	`persona_preset` text DEFAULT 'mira' NOT NULL,
+	`prompt_profile` text DEFAULT 'warm_empathetic' NOT NULL,
+	`enabled_tools` text DEFAULT '[]' NOT NULL,
+	`created_at` integer NOT NULL,
+	`updated_at` integer NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE `level3_sessions` (
+	`id` integer PRIMARY KEY AUTOINCREMENT,
+	`agent_id` integer NOT NULL,
+	`title` text DEFAULT '' NOT NULL,
+	`status` text DEFAULT 'active' NOT NULL,
+	`elevenlabs_agent_id` text NOT NULL,
+	`elevenlabs_conversation_id` text,
+	`started_at` integer NOT NULL,
+	`ended_at` integer,
+	`duration_ms` integer,
+	`transcript` text DEFAULT '[]' NOT NULL,
+	`clinical_context` text DEFAULT '{}' NOT NULL,
+	`resolution` text,
+	`events` text DEFAULT '[]' NOT NULL,
+	`metrics` text DEFAULT '{}' NOT NULL,
+	`created_at` integer NOT NULL,
+	`updated_at` integer NOT NULL,
+	CONSTRAINT `fk_level3_sessions_agent_id_level3_agents_id_fk` FOREIGN KEY (`agent_id`) REFERENCES `level3_agents`(`id`) ON DELETE CASCADE
+);

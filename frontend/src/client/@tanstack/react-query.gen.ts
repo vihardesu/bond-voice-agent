@@ -3,8 +3,8 @@
 import { type DefaultError, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { createAgent, createSpeechClientSecret, createSpeechSession, deleteAgent, deleteConciergeDoctorSession, deleteSpeechSession, ensureConciergeDoctorAgent, getAgent, getConciergeDoctorSession, getSpeechSession, listAgents, listConciergeDoctorSessions, listSpeechSessions, mockConciergePharmacyRequest, mockConciergeScheduleFollowUp, type Options, startConciergeDoctorSession, updateAgent, updateConciergeDoctorSession, updateSpeechSession } from '../sdk.gen';
-import type { CreateAgentData, CreateAgentResponse, CreateSpeechClientSecretData, CreateSpeechClientSecretError, CreateSpeechClientSecretResponse, CreateSpeechSessionData, CreateSpeechSessionResponse, DeleteAgentData, DeleteAgentError, DeleteAgentResponse, DeleteConciergeDoctorSessionData, DeleteConciergeDoctorSessionError, DeleteConciergeDoctorSessionResponse, DeleteSpeechSessionData, DeleteSpeechSessionError, DeleteSpeechSessionResponse, EnsureConciergeDoctorAgentData, EnsureConciergeDoctorAgentError, EnsureConciergeDoctorAgentResponse, GetAgentData, GetAgentError, GetAgentResponse, GetConciergeDoctorSessionData, GetConciergeDoctorSessionError, GetConciergeDoctorSessionResponse, GetSpeechSessionData, GetSpeechSessionError, GetSpeechSessionResponse, ListAgentsData, ListAgentsResponse, ListConciergeDoctorSessionsData, ListConciergeDoctorSessionsResponse, ListSpeechSessionsData, ListSpeechSessionsResponse, MockConciergePharmacyRequestData, MockConciergePharmacyRequestResponse, MockConciergeScheduleFollowUpData, MockConciergeScheduleFollowUpResponse, StartConciergeDoctorSessionData, StartConciergeDoctorSessionError, StartConciergeDoctorSessionResponse, UpdateAgentData, UpdateAgentError, UpdateAgentResponse, UpdateConciergeDoctorSessionData, UpdateConciergeDoctorSessionError, UpdateConciergeDoctorSessionResponse, UpdateSpeechSessionData, UpdateSpeechSessionError, UpdateSpeechSessionResponse } from '../types.gen';
+import { createAgent, createLevel3Agent, createSpeechClientSecret, createSpeechSession, deleteAgent, deleteConciergeDoctorSession, deleteLevel3Agent, deleteLevel3Session, deleteSpeechSession, ensureConciergeDoctorAgent, getAgent, getConciergeDoctorSession, getLevel3Agent, getLevel3Session, getSpeechSession, listAgents, listConciergeDoctorSessions, listLevel3Agents, listLevel3Sessions, listSpeechSessions, mockConciergePharmacyRequest, mockConciergeScheduleFollowUp, mockLevel3PharmacyRequest, mockLevel3ScheduleFollowUp, type Options, startConciergeDoctorSession, startLevel3Session, updateAgent, updateConciergeDoctorSession, updateLevel3Agent, updateLevel3Session, updateSpeechSession } from '../sdk.gen';
+import type { CreateAgentData, CreateAgentResponse, CreateLevel3AgentData, CreateLevel3AgentError, CreateLevel3AgentResponse, CreateSpeechClientSecretData, CreateSpeechClientSecretError, CreateSpeechClientSecretResponse, CreateSpeechSessionData, CreateSpeechSessionResponse, DeleteAgentData, DeleteAgentError, DeleteAgentResponse, DeleteConciergeDoctorSessionData, DeleteConciergeDoctorSessionError, DeleteConciergeDoctorSessionResponse, DeleteLevel3AgentData, DeleteLevel3AgentError, DeleteLevel3AgentResponse, DeleteLevel3SessionData, DeleteLevel3SessionError, DeleteLevel3SessionResponse, DeleteSpeechSessionData, DeleteSpeechSessionError, DeleteSpeechSessionResponse, EnsureConciergeDoctorAgentData, EnsureConciergeDoctorAgentError, EnsureConciergeDoctorAgentResponse, GetAgentData, GetAgentError, GetAgentResponse, GetConciergeDoctorSessionData, GetConciergeDoctorSessionError, GetConciergeDoctorSessionResponse, GetLevel3AgentData, GetLevel3AgentError, GetLevel3AgentResponse, GetLevel3SessionData, GetLevel3SessionError, GetLevel3SessionResponse, GetSpeechSessionData, GetSpeechSessionError, GetSpeechSessionResponse, ListAgentsData, ListAgentsResponse, ListConciergeDoctorSessionsData, ListConciergeDoctorSessionsResponse, ListLevel3AgentsData, ListLevel3AgentsResponse, ListLevel3SessionsData, ListLevel3SessionsResponse, ListSpeechSessionsData, ListSpeechSessionsResponse, MockConciergePharmacyRequestData, MockConciergePharmacyRequestResponse, MockConciergeScheduleFollowUpData, MockConciergeScheduleFollowUpResponse, MockLevel3PharmacyRequestData, MockLevel3PharmacyRequestResponse, MockLevel3ScheduleFollowUpData, MockLevel3ScheduleFollowUpResponse, StartConciergeDoctorSessionData, StartConciergeDoctorSessionError, StartConciergeDoctorSessionResponse, StartLevel3SessionData, StartLevel3SessionError, StartLevel3SessionResponse2, UpdateAgentData, UpdateAgentError, UpdateAgentResponse, UpdateConciergeDoctorSessionData, UpdateConciergeDoctorSessionError, UpdateConciergeDoctorSessionResponse, UpdateLevel3AgentData, UpdateLevel3AgentError, UpdateLevel3AgentResponse, UpdateLevel3SessionData, UpdateLevel3SessionError, UpdateLevel3SessionResponse, UpdateSpeechSessionData, UpdateSpeechSessionError, UpdateSpeechSessionResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -358,6 +358,214 @@ export const mockConciergeScheduleFollowUpMutation = (options?: Partial<Options<
     const mutationOptions: UseMutationOptions<MockConciergeScheduleFollowUpResponse, DefaultError, Options<MockConciergeScheduleFollowUpData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await mockConciergeScheduleFollowUp({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const listLevel3SessionsQueryKey = (options?: Options<ListLevel3SessionsData>) => createQueryKey('listLevel3Sessions', options);
+
+/**
+ * List Level 3 sessions
+ */
+export const listLevel3SessionsOptions = (options?: Options<ListLevel3SessionsData>) => queryOptions<ListLevel3SessionsResponse, DefaultError, ListLevel3SessionsResponse, ReturnType<typeof listLevel3SessionsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listLevel3Sessions({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listLevel3SessionsQueryKey(options)
+});
+
+/**
+ * Delete a Level 3 session
+ */
+export const deleteLevel3SessionMutation = (options?: Partial<Options<DeleteLevel3SessionData>>): UseMutationOptions<DeleteLevel3SessionResponse, DeleteLevel3SessionError, Options<DeleteLevel3SessionData>> => {
+    const mutationOptions: UseMutationOptions<DeleteLevel3SessionResponse, DeleteLevel3SessionError, Options<DeleteLevel3SessionData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteLevel3Session({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getLevel3SessionQueryKey = (options: Options<GetLevel3SessionData>) => createQueryKey('getLevel3Session', options);
+
+/**
+ * Get a Level 3 session
+ */
+export const getLevel3SessionOptions = (options: Options<GetLevel3SessionData>) => queryOptions<GetLevel3SessionResponse, GetLevel3SessionError, GetLevel3SessionResponse, ReturnType<typeof getLevel3SessionQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getLevel3Session({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getLevel3SessionQueryKey(options)
+});
+
+/**
+ * Update a Level 3 session
+ */
+export const updateLevel3SessionMutation = (options?: Partial<Options<UpdateLevel3SessionData>>): UseMutationOptions<UpdateLevel3SessionResponse, UpdateLevel3SessionError, Options<UpdateLevel3SessionData>> => {
+    const mutationOptions: UseMutationOptions<UpdateLevel3SessionResponse, UpdateLevel3SessionError, Options<UpdateLevel3SessionData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateLevel3Session({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Mock retail pharmacy portal action
+ */
+export const mockLevel3PharmacyRequestMutation = (options?: Partial<Options<MockLevel3PharmacyRequestData>>): UseMutationOptions<MockLevel3PharmacyRequestResponse, DefaultError, Options<MockLevel3PharmacyRequestData>> => {
+    const mutationOptions: UseMutationOptions<MockLevel3PharmacyRequestResponse, DefaultError, Options<MockLevel3PharmacyRequestData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await mockLevel3PharmacyRequest({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Mock provider follow-up scheduling
+ */
+export const mockLevel3ScheduleFollowUpMutation = (options?: Partial<Options<MockLevel3ScheduleFollowUpData>>): UseMutationOptions<MockLevel3ScheduleFollowUpResponse, DefaultError, Options<MockLevel3ScheduleFollowUpData>> => {
+    const mutationOptions: UseMutationOptions<MockLevel3ScheduleFollowUpResponse, DefaultError, Options<MockLevel3ScheduleFollowUpData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await mockLevel3ScheduleFollowUp({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const listLevel3AgentsQueryKey = (options?: Options<ListLevel3AgentsData>) => createQueryKey('listLevel3Agents', options);
+
+/**
+ * List Level 3 agents
+ */
+export const listLevel3AgentsOptions = (options?: Options<ListLevel3AgentsData>) => queryOptions<ListLevel3AgentsResponse, DefaultError, ListLevel3AgentsResponse, ReturnType<typeof listLevel3AgentsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listLevel3Agents({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listLevel3AgentsQueryKey(options)
+});
+
+/**
+ * Create a Level 3 agent from typed settings
+ */
+export const createLevel3AgentMutation = (options?: Partial<Options<CreateLevel3AgentData>>): UseMutationOptions<CreateLevel3AgentResponse, CreateLevel3AgentError, Options<CreateLevel3AgentData>> => {
+    const mutationOptions: UseMutationOptions<CreateLevel3AgentResponse, CreateLevel3AgentError, Options<CreateLevel3AgentData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await createLevel3Agent({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Delete a Level 3 agent
+ */
+export const deleteLevel3AgentMutation = (options?: Partial<Options<DeleteLevel3AgentData>>): UseMutationOptions<DeleteLevel3AgentResponse, DeleteLevel3AgentError, Options<DeleteLevel3AgentData>> => {
+    const mutationOptions: UseMutationOptions<DeleteLevel3AgentResponse, DeleteLevel3AgentError, Options<DeleteLevel3AgentData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteLevel3Agent({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getLevel3AgentQueryKey = (options: Options<GetLevel3AgentData>) => createQueryKey('getLevel3Agent', options);
+
+/**
+ * Get a Level 3 agent
+ */
+export const getLevel3AgentOptions = (options: Options<GetLevel3AgentData>) => queryOptions<GetLevel3AgentResponse, GetLevel3AgentError, GetLevel3AgentResponse, ReturnType<typeof getLevel3AgentQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getLevel3Agent({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getLevel3AgentQueryKey(options)
+});
+
+/**
+ * Update a Level 3 agent and sync ElevenLabs
+ */
+export const updateLevel3AgentMutation = (options?: Partial<Options<UpdateLevel3AgentData>>): UseMutationOptions<UpdateLevel3AgentResponse, UpdateLevel3AgentError, Options<UpdateLevel3AgentData>> => {
+    const mutationOptions: UseMutationOptions<UpdateLevel3AgentResponse, UpdateLevel3AgentError, Options<UpdateLevel3AgentData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateLevel3Agent({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Start a conversation with a Level 3 agent
+ */
+export const startLevel3SessionMutation = (options?: Partial<Options<StartLevel3SessionData>>): UseMutationOptions<StartLevel3SessionResponse2, StartLevel3SessionError, Options<StartLevel3SessionData>> => {
+    const mutationOptions: UseMutationOptions<StartLevel3SessionResponse2, StartLevel3SessionError, Options<StartLevel3SessionData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await startLevel3Session({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
