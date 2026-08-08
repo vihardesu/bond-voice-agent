@@ -716,18 +716,59 @@ function ConciergeDoctorExperience() {
   return (
     <main className="flex min-h-dvh flex-1 justify-center bg-primary px-4 py-10">
       <section className="flex w-full max-w-5xl flex-col gap-8">
-        <header className="flex flex-col gap-3">
+        <header className="flex flex-col gap-4">
           <Badge color="brand" size="sm" type="pill-color">
-            ElevenLabs · Concierge doctor
+            Level 2 Agent
           </Badge>
-          <div className="flex flex-col gap-1">
-            <h1 className="text-display-xs font-semibold text-primary">
-              Empathetic concierge doctor
-            </h1>
-            <p className="text-md text-tertiary">
-              Talk with Mira, dial empathy vs. directness, extract clinical context, take
-              mock care actions, and watch live observability while the call runs.
-            </p>
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
+              <h1 className="text-display-xs font-semibold text-primary">Level 2 Agent</h1>
+              <p className="text-md text-tertiary">
+                Mira — Bond&apos;s empathetic ElevenLabs Conversational AI concierge doctor.
+                Unlike Level 1, this agent runs a full harness: a system prompt, dynamic empathy
+                dials, structured clinical-context extraction, mock care-action tools, and
+                layered guardrails. Talk live, then review historic sessions and observability
+                below.
+              </p>
+            </div>
+
+            <div className="grid gap-3 rounded-2xl bg-secondary p-4 text-sm text-secondary ring-1 ring-secondary sm:grid-cols-2">
+              <div className="flex flex-col gap-1.5">
+                <p className="font-semibold text-primary">Runtime parameters</p>
+                <ul className="list-disc space-y-1 pl-4 text-tertiary">
+                  <li>LLM: `gemini-2.5-flash` (temperature 0.4)</li>
+                  <li>TTS: `eleven_flash_v2` · voice Sarah · expressive mode</li>
+                  <li>ASR: `scribe_realtime` (high) with clinical keywords</li>
+                  <li>Turn model: `turn_v3` · timeout 7s · style-aware eagerness</li>
+                  <li>Dials: `communication_style`, `explanation_level`</li>
+                  <li>Max call length: 15 minutes · auth-enabled WebRTC token</li>
+                </ul>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <p className="font-semibold text-primary">Guardrails</p>
+                <ul className="list-disc space-y-1 pl-4 text-tertiary">
+                  <li>Focus + prompt-injection protection enabled</li>
+                  <li>Self-harm content filter enabled (blocking, retry)</li>
+                  <li>Built-in medical/legal filter disabled so symptom talk is allowed</li>
+                  <li>
+                    Custom rule: block diagnosis / prescribing / dose changes; retry with safe
+                    triage feedback (`gemini-2.5-flash-lite`)
+                  </li>
+                </ul>
+              </div>
+              <div className="flex flex-col gap-1.5 sm:col-span-2">
+                <p className="font-semibold text-primary">Mock client tools</p>
+                <ul className="list-disc space-y-1 pl-4 text-tertiary sm:columns-2">
+                  <li>`update_clinical_context` — structured symptom chart</li>
+                  <li>`schedule_follow_up` — mock nurse/clinician booking</li>
+                  <li>`submit_pharmacy_request` — mock Walgreens/CVS portal</li>
+                  <li>`confirm_next_step` — lock in an agreed resolution</li>
+                  <li>`request_human_handoff` — escalate instead of guessing</li>
+                  <li>`flag_watch_event` — live supervisor observability</li>
+                  <li>`end_call` — built-in system tool to close politely</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </header>
 

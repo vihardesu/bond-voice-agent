@@ -195,17 +195,19 @@ export function SpeechSessionsPage() {
   return (
     <main className="flex min-h-dvh flex-1 justify-center bg-primary px-4 py-10">
       <section className="flex w-full max-w-3xl flex-col gap-8">
-        <header className="flex flex-col gap-3">
+        <header className="flex flex-col gap-4">
           <Badge color="brand" size="sm" type="pill-color">
-            Speech to speech
+            Level 1 Agent
           </Badge>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-2">
             <h1 className="text-display-xs font-semibold text-primary">
-              Talk with the voice agent
+              Level 1 Agent
             </h1>
             <p className="text-md text-tertiary">
-              Start a live conversation with OpenAI&apos;s realtime speech model, then review
-              saved transcripts below.
+              A basic voice agent built on OpenAI&apos;s latest speech-to-speech realtime model
+              (`gpt-realtime-2.1`, voice `marin`). There is no custom harness, system prompt,
+              tool layer, or guardrail stack — the browser opens a raw WebRTC session and you
+              talk directly to the model. Saved transcripts below are for review only.
             </p>
           </div>
         </header>

@@ -1,7 +1,7 @@
 "use client";
 
-import { AgentsCrud } from "@/components/agents/agents-crud";
+import { AgentGallery } from "@/components/home/agent-gallery";
 
 export default function Home() {
-  return <AgentsCrud />;
+  return <AgentGallery />;
 }

@@ -33,9 +33,9 @@ npm run dev
 
 ## Features
 
-- **Agents** (`/`) — manage voice agent configs
-- **Speech** (`/speech`) — OpenAI Realtime speech-to-speech conversations with persisted session history (duration, start/end, transcript)
-- **Concierge** (`/concierge`) — standalone ElevenLabs empathetic concierge doctor with empathy dials, structured clinical context, mock care actions/handoffs, live observability, and historic sessions
+- **Home** (`/`) — gallery of the two speakable agents
+- **Level 1 Agent** (`/speech`) — OpenAI Realtime speech-to-speech baseline (no custom harness/prompt) with persisted session history
+- **Level 2 Agent** (`/concierge`) — ElevenLabs empathetic concierge doctor with empathy dials, structured clinical context, mock care actions/handoffs, guardrails, live observability, and historic sessions
 
 Backend speech module: `backend/src/modules/speech-sessions/` (`OPENAI_API_KEY`).
 

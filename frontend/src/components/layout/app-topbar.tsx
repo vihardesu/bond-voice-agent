@@ -2,31 +2,30 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Home01 } from "@untitledui/icons";
 
 import { cx } from "@/utils/cx";
 
-const links = [
-  { href: "/", label: "Agents" },
-  { href: "/speech", label: "Speech" },
-  { href: "/concierge", label: "Concierge" },
+const agentLinks = [
+  { href: "/speech", label: "Level 1 Agent" },
+  { href: "/concierge", label: "Level 2 Agent" },
 ] as const;
 
 export function AppTopbar() {
   const pathname = usePathname();
+  const isHome = pathname === "/";
 
   return (
     <header className="sticky top-0 z-40 border-b border-secondary bg-primary/90 backdrop-blur-md">
-      <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-4">
-        <Link href="/" className="text-md font-semibold tracking-tight text-primary">
+      <div className="mx-auto flex h-14 w-full max-w-5xl items-center gap-4 px-4">
+        <Link href="/" className="shrink-0 text-md font-semibold tracking-tight text-primary">
           Bond Voice Agent
         </Link>
 
-        <nav className="flex items-center gap-1">
-          {links.map((link) => {
+        <nav className="flex min-w-0 flex-1 items-center gap-1">
+          {agentLinks.map((link) => {
             const isActive =
-              link.href === "/"
-                ? pathname === "/"
-                : pathname === link.href || pathname.startsWith(`${link.href}/`);
+              pathname === link.href || pathname.startsWith(`${link.href}/`);
 
             return (
               <Link
@@ -44,6 +43,19 @@ export function AppTopbar() {
             );
           })}
         </nav>
+
+        <Link
+          href="/"
+          className={cx(
+            "ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors",
+            isHome
+              ? "bg-secondary text-primary"
+              : "text-tertiary hover:bg-primary_hover hover:text-secondary_hover",
+          )}
+        >
+          <Home01 className="size-4" />
+          Home
+        </Link>
       </div>
     </header>
   );
