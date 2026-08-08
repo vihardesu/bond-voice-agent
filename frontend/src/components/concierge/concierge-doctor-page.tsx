@@ -165,7 +165,7 @@ function ConciergeDoctorExperience() {
               ).toFixed(3),
             )
           : null,
-      ttsModel: "eleven_flash_v2_5",
+      ttsModel: "eleven_flash_v2",
       asrProvider: "scribe_realtime",
       turnModel: "turn_v3",
     };

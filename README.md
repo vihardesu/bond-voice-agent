@@ -13,7 +13,7 @@ Monorepo for the Bond voice agent.
 cd backend
 cp .env.example .env
 npm install
-npm run db:push
+npm run db:push   # optional locally; `npm run dev` also applies migrations on boot
 npm run dev
 ```
 

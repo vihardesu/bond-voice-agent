@@ -391,7 +391,8 @@ conciergeDoctorApp.openapi(startSessionRoute, async (c) => {
 
   try {
     const { agentId } = await ensureConciergeAgent({
-      forceSync: body.forceSyncAgent,
+      // Keep remote agent config aligned with local defaults (TTS model, monitoring, etc.).
+      forceSync: body.forceSyncAgent ?? true,
     });
     const credentials = await createConversationCredentials({ agentId });
 

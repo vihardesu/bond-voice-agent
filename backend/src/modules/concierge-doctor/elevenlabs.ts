@@ -60,7 +60,8 @@ function agentConversationConfig(
     },
     tts: {
       voiceId: DEFAULT_VOICE_ID,
-      modelId: "eleven_flash_v2_5",
+      // English agents require turbo/flash v2 (not multilingual flash v2.5).
+      modelId: "eleven_flash_v2",
       stability: 0.45,
       similarityBoost: 0.8,
       speed: 1.0,
@@ -87,7 +88,8 @@ function agentConversationConfig(
     conversation: {
       maxDurationSeconds: 900,
       textOnly: false,
-      monitoringEnabled: true,
+      // Real-time monitoring is enterprise-only; keep disabled for standard plans.
+      monitoringEnabled: false,
       clientEvents: [
         "audio",
         "user_transcript",
@@ -283,7 +285,7 @@ export function extractMetricsFromRemote(
     featuresUsage: metadata?.featuresUsage ?? null,
     terminationReason: metadata?.terminationReason ?? null,
     analysisSummary: remote?.analysis?.transcriptSummary ?? null,
-    ttsModel: "eleven_flash_v2_5",
+    ttsModel: "eleven_flash_v2",
     asrProvider: "scribe_realtime",
     turnModel: "turn_v3",
   };

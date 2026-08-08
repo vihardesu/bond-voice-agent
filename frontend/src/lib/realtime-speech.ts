@@ -52,9 +52,15 @@ export async function connectRealtimeSpeech(options: {
   const peerConnection = new RTCPeerConnection();
   const audioElement = document.createElement("audio");
   audioElement.autoplay = true;
+  audioElement.setAttribute("playsinline", "true");
+  audioElement.style.display = "none";
+  document.body.appendChild(audioElement);
 
   peerConnection.ontrack = (event) => {
     audioElement.srcObject = event.streams[0] ?? null;
+    void audioElement.play().catch(() => {
+      // Autoplay can still be blocked until a user gesture; Start already requires one.
+    });
   };
 
   const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -72,18 +78,27 @@ export async function connectRealtimeSpeech(options: {
     try {
       const serverEvent = JSON.parse(String(event.data)) as RealtimeServerEvent;
 
-      if (serverEvent.type === "conversation.item.input_audio_transcription.completed") {
+      if (
+        serverEvent.type === "conversation.item.input_audio_transcription.completed" ||
+        serverEvent.type === "conversation.item.input_audio_transcription.done"
+      ) {
         transcript = appendTranscript(transcript, "user", serverEvent.transcript ?? "");
         onTranscript(transcript);
         return;
       }
 
-      if (serverEvent.type === "response.output_audio_transcript.delta") {
+      if (
+        serverEvent.type === "response.output_audio_transcript.delta" ||
+        serverEvent.type === "response.audio_transcript.delta"
+      ) {
         assistantBuffer += serverEvent.delta ?? "";
         return;
       }
 
-      if (serverEvent.type === "response.output_audio_transcript.done") {
+      if (
+        serverEvent.type === "response.output_audio_transcript.done" ||
+        serverEvent.type === "response.audio_transcript.done"
+      ) {
         const text = serverEvent.transcript || assistantBuffer;
         assistantBuffer = "";
         transcript = appendTranscript(transcript, "assistant", text);
@@ -128,7 +143,9 @@ export async function connectRealtimeSpeech(options: {
     mediaStream.getTracks().forEach((track) => track.stop());
     peerConnection.getSenders().forEach((sender) => sender.track?.stop());
     peerConnection.close();
+    audioElement.pause();
     audioElement.srcObject = null;
+    audioElement.remove();
     onStatus?.("disconnected");
   };
 
