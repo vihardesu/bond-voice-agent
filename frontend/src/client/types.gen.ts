@@ -310,7 +310,7 @@ export type Level3Agent = {
     turnEagerness: 'patient' | 'normal' | 'eager';
     voicePreset: 'sarah' | 'jessica' | 'george' | 'brian' | 'laura';
     ttsModel: 'eleven_flash_v2' | 'eleven_turbo_v2';
-    llm: 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gpt-4o-mini' | 'gpt-4.1-mini' | 'claude-haiku-4-5';
+    llm: 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gpt-4o-mini' | 'gpt-4.1-mini' | 'claude-haiku-4-5' | 'gemini-2.0-flash-lite' | 'gemini-3.1-flash-lite' | 'gemini-3.5-flash-lite' | 'qwen3-30b-a3b' | 'qwen36-35b-a3b' | 'gpt-oss-120b' | 'glm-45-air-fp8';
     interruptionMode: 'allow' | 'ignore_backchannels' | 'protect_tools';
     personaPreset: 'mira' | 'alex' | 'jordan' | 'sam';
     promptProfile: 'warm_empathetic' | 'efficient_triage' | 'calm_navigator';
@@ -341,7 +341,7 @@ export type Level3AgentSettings = {
     turnEagerness?: 'patient' | 'normal' | 'eager';
     voicePreset?: 'sarah' | 'jessica' | 'george' | 'brian' | 'laura';
     ttsModel?: 'eleven_flash_v2' | 'eleven_turbo_v2';
-    llm?: 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gpt-4o-mini' | 'gpt-4.1-mini' | 'claude-haiku-4-5';
+    llm?: 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gpt-4o-mini' | 'gpt-4.1-mini' | 'claude-haiku-4-5' | 'gemini-2.0-flash-lite' | 'gemini-3.1-flash-lite' | 'gemini-3.5-flash-lite' | 'qwen3-30b-a3b' | 'qwen36-35b-a3b' | 'gpt-oss-120b' | 'glm-45-air-fp8';
     interruptionMode?: 'allow' | 'ignore_backchannels' | 'protect_tools';
     personaPreset?: 'mira' | 'alex' | 'jordan' | 'sam';
     promptProfile?: 'warm_empathetic' | 'efficient_triage' | 'calm_navigator';
@@ -363,7 +363,7 @@ export type CreateLevel3Agent = {
     turnEagerness?: 'patient' | 'normal' | 'eager';
     voicePreset?: 'sarah' | 'jessica' | 'george' | 'brian' | 'laura';
     ttsModel?: 'eleven_flash_v2' | 'eleven_turbo_v2';
-    llm?: 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gpt-4o-mini' | 'gpt-4.1-mini' | 'claude-haiku-4-5';
+    llm?: 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gpt-4o-mini' | 'gpt-4.1-mini' | 'claude-haiku-4-5' | 'gemini-2.0-flash-lite' | 'gemini-3.1-flash-lite' | 'gemini-3.5-flash-lite' | 'qwen3-30b-a3b' | 'qwen36-35b-a3b' | 'gpt-oss-120b' | 'glm-45-air-fp8';
     interruptionMode?: 'allow' | 'ignore_backchannels' | 'protect_tools';
     personaPreset?: 'mira' | 'alex' | 'jordan' | 'sam';
     promptProfile?: 'warm_empathetic' | 'efficient_triage' | 'calm_navigator';
@@ -385,7 +385,7 @@ export type UpdateLevel3Agent = {
     turnEagerness?: 'patient' | 'normal' | 'eager';
     voicePreset?: 'sarah' | 'jessica' | 'george' | 'brian' | 'laura';
     ttsModel?: 'eleven_flash_v2' | 'eleven_turbo_v2';
-    llm?: 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gpt-4o-mini' | 'gpt-4.1-mini' | 'claude-haiku-4-5';
+    llm?: 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gpt-4o-mini' | 'gpt-4.1-mini' | 'claude-haiku-4-5' | 'gemini-2.0-flash-lite' | 'gemini-3.1-flash-lite' | 'gemini-3.5-flash-lite' | 'qwen3-30b-a3b' | 'qwen36-35b-a3b' | 'gpt-oss-120b' | 'glm-45-air-fp8';
     interruptionMode?: 'allow' | 'ignore_backchannels' | 'protect_tools';
     personaPreset?: 'mira' | 'alex' | 'jordan' | 'sam';
     promptProfile?: 'warm_empathetic' | 'efficient_triage' | 'calm_navigator';

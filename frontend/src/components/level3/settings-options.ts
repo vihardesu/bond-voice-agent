@@ -27,6 +27,13 @@ export const LLM_OPTIONS = [
   "gpt-4o-mini",
   "gpt-4.1-mini",
   "claude-haiku-4-5",
+  "gemini-2.0-flash-lite",
+  "gemini-3.1-flash-lite",
+  "gemini-3.5-flash-lite",
+  "qwen3-30b-a3b",
+  "qwen36-35b-a3b",
+  "gpt-oss-120b",
+  "glm-45-air-fp8",
 ] as const;
 export const INTERRUPTION_MODES = [
   "allow",
@@ -156,6 +163,13 @@ export const LABELS = {
     "gpt-4o-mini": "GPT-4o Mini",
     "gpt-4.1-mini": "GPT-4.1 Mini",
     "claude-haiku-4-5": "Claude Haiku 4.5",
+    "gemini-2.0-flash-lite": "Gemini 2.0 Flash Lite",
+    "gemini-3.1-flash-lite": "Gemini 3.1 Flash Lite",
+    "gemini-3.5-flash-lite": "Gemini 3.5 Flash Lite",
+    "qwen3-30b-a3b": "Qwen3 30B (hosted)",
+    "qwen36-35b-a3b": "Qwen3.6 35B (hosted)",
+    "gpt-oss-120b": "GPT-OSS 120B (hosted)",
+    "glm-45-air-fp8": "GLM 4.5 Air (hosted)",
   },
   interruptionMode: {
     allow: "Allow barge-in freely",

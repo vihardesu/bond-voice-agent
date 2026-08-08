@@ -33,6 +33,14 @@ export const LLM_OPTIONS = [
   "gpt-4o-mini",
   "gpt-4.1-mini",
   "claude-haiku-4-5",
+  // Lower-refusal / hosted-open and flash-lite options for clinical discussion UX.
+  "gemini-2.0-flash-lite",
+  "gemini-3.1-flash-lite",
+  "gemini-3.5-flash-lite",
+  "qwen3-30b-a3b",
+  "qwen36-35b-a3b",
+  "gpt-oss-120b",
+  "glm-45-air-fp8",
 ] as const;
 export type LlmOption = (typeof LLM_OPTIONS)[number];
 
