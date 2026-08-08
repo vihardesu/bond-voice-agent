@@ -36,6 +36,7 @@ type ResolutionValue = NonNullable<ConciergeResolution>;
 function getErrorMessage(error: unknown): string | null {
   if (!error) return null;
   if (error instanceof globalThis.Error) return error.message;
+  if (typeof error === "string" && error.trim()) return error;
   if (
     typeof error === "object" &&
     "error" in error &&
@@ -43,7 +44,72 @@ function getErrorMessage(error: unknown): string | null {
   ) {
     return (error as { error: string }).error;
   }
-  return "Something went wrong";
+  if (
+    typeof error === "object" &&
+    "message" in error &&
+    typeof (error as { message: unknown }).message === "string"
+  ) {
+    return (error as { message: string }).message;
+  }
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return "Something went wrong";
+  }
+}
+
+function formatUnknown(value: unknown): string {
+  if (value == null) return "";
+  if (typeof value === "string") return value;
+  if (value instanceof globalThis.Error) return value.message;
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
+function formatConversationError(message: string, context?: unknown): string {
+  const contextText = formatUnknown(context);
+  if (!contextText || contextText === "{}" || contextText === "null") {
+    return message || "Conversation error";
+  }
+  return `${message || "Conversation error"} (${contextText})`;
+}
+
+type DisconnectDetails =
+  | {
+      reason: "error";
+      message: string;
+      context: { type?: string; reason?: string; code?: number };
+      closeCode?: number;
+      closeReason?: string;
+    }
+  | {
+      reason: "agent";
+      context?: { type?: string; reason?: string; code?: number };
+      closeCode?: number;
+      closeReason?: string;
+    }
+  | {
+      reason: "user";
+    };
+
+function formatDisconnectDetails(details: DisconnectDetails): string {
+  if (details.reason === "user") {
+    return "reason=user";
+  }
+
+  const parts = [
+    `reason=${details.reason}`,
+    details.reason === "error" && details.message ? `message=${details.message}` : null,
+    details.closeCode != null ? `closeCode=${details.closeCode}` : null,
+    details.closeReason ? `closeReason=${details.closeReason}` : null,
+    details.context?.type ? `contextType=${details.context.type}` : null,
+    details.context?.code != null ? `contextCode=${details.context.code}` : null,
+    details.context?.reason ? `contextReason=${details.context.reason}` : null,
+  ].filter(Boolean);
+  return parts.join(" · ");
 }
 
 function formatDuration(durationMs: number | null | undefined): string {
@@ -112,6 +178,7 @@ function ConciergeDoctorExperience() {
   const vadSamplesRef = useRef<number[]>([]);
   const activeSessionIdRef = useRef<number | null>(null);
   const pendingAppendRef = useRef<ConciergeObservabilityEvent[]>([]);
+  const isClosingRef = useRef(false);
 
   const isLive = status === "connecting" || status === "connected";
 
@@ -359,20 +426,22 @@ function ConciergeDoctorExperience() {
     return JSON.stringify({ ok: true });
   });
 
-  const endLiveConversation = async () => {
+  const persistEndedSession = async (options?: {
+    statusMessage?: string;
+    errorMessage?: string | null;
+  }) => {
     const sessionId = activeSessionIdRef.current;
-    endSession();
-    setMode("idle");
-
-    if (sessionId == null) return;
+    if (sessionId == null || isClosingRef.current) return;
+    isClosingRef.current = true;
 
     const endedAt = new Date();
     const startedAt = startedAtRef.current ?? endedAt.getTime();
     const durationMs = Math.max(0, endedAt.getTime() - startedAt);
     const localMetrics = recomputeLocalMetrics();
+    const statusMessage = options?.statusMessage ?? "Conversation ended";
 
     try {
-      await updateSession.mutateAsync({
+      const updated = await updateSession.mutateAsync({
         path: { id: String(sessionId) },
         body: {
           status: "ended",
@@ -386,7 +455,7 @@ function ConciergeDoctorExperience() {
             {
               at: endedAt.toISOString(),
               type: "status",
-              message: "Conversation ended",
+              message: statusMessage,
             },
           ],
           metrics: localMetrics,
@@ -398,14 +467,48 @@ function ConciergeDoctorExperience() {
         },
       });
       pendingAppendRef.current = [];
+      setMetrics(updated.metrics);
+
+      const remoteReason =
+        typeof updated.metrics.terminationReason === "string"
+          ? updated.metrics.terminationReason
+          : typeof updated.metrics.elevenLabsErrorReason === "string"
+            ? updated.metrics.elevenLabsErrorReason
+            : null;
+
+      if (options?.errorMessage || remoteReason) {
+        const combined = [options?.errorMessage, remoteReason].filter(Boolean).join(" — ");
+        setLocalError(combined);
+        console.error("[concierge-doctor] Conversation ended with error detail", {
+          sessionId,
+          conversationId,
+          localError: options?.errorMessage ?? null,
+          terminationReason: updated.metrics.terminationReason ?? null,
+          elevenLabsErrorCode: updated.metrics.elevenLabsErrorCode ?? null,
+          elevenLabsErrorReason: updated.metrics.elevenLabsErrorReason ?? null,
+          remoteStatus: updated.metrics.remoteStatus ?? null,
+        });
+      }
     } catch (err) {
-      setLocalError(getErrorMessage(err) || "Failed to save conversation");
+      const message = getErrorMessage(err) || "Failed to save conversation";
+      setLocalError(message);
+      console.error("[concierge-doctor] Failed to persist ended session", {
+        sessionId,
+        error: message,
+      });
     } finally {
       setActiveSessionId(null);
       activeSessionIdRef.current = null;
       setConversationId(null);
       startedAtRef.current = null;
+      isClosingRef.current = false;
     }
+  };
+
+  const endLiveConversation = async () => {
+    endSession();
+    setMode("idle");
+    await persistEndedSession({ statusMessage: "Conversation ended by user" });
   };
 
   const beginConversation = async () => {
@@ -423,13 +526,15 @@ function ConciergeDoctorExperience() {
     latencySamplesRef.current = [];
     vadSamplesRef.current = [];
     pendingAppendRef.current = [];
+    isClosingRef.current = false;
 
     try {
       const started = await startSession.mutateAsync({
         body: {
           communicationStyle,
           explanationLevel,
-          forceSyncAgent: false,
+          // Always push latest guardrail/TTS config before connecting.
+          forceSyncAgent: true,
         },
       });
 
@@ -437,6 +542,11 @@ function ConciergeDoctorExperience() {
       activeSessionIdRef.current = started.session.id;
       setConversationId(started.conversationId);
       startedAtRef.current = Date.now();
+      console.info("[concierge-doctor] Session started", {
+        sessionId: started.session.id,
+        conversationId: started.conversationId,
+        agentId: started.session.elevenLabsAgentId,
+      });
 
       startConversation({
         conversationToken: started.conversationToken,
@@ -444,6 +554,9 @@ function ConciergeDoctorExperience() {
         dynamicVariables: started.dynamicVariables,
         onConnect: ({ conversationId: connectedId }) => {
           setConversationId(connectedId);
+          console.info("[concierge-doctor] Connected to ElevenLabs", {
+            conversationId: connectedId,
+          });
           pushEvent({
             at: new Date().toISOString(),
             type: "status",
@@ -451,20 +564,72 @@ function ConciergeDoctorExperience() {
             data: { conversationId: connectedId },
           });
         },
-        onDisconnect: () => {
+        onDisconnect: (details) => {
+          const typedDetails = details as DisconnectDetails;
+          const detailText = formatDisconnectDetails(typedDetails);
+          console.error("[concierge-doctor] Disconnected from ElevenLabs", typedDetails);
           pushEvent({
             at: new Date().toISOString(),
-            type: "status",
-            message: "Disconnected",
+            type: typedDetails.reason === "error" ? "error" : "status",
+            message:
+              typedDetails.reason === "error"
+                ? `Disconnected: ${typedDetails.message || "Unknown error"}`
+                : `Disconnected (${typedDetails.reason})`,
+            data: {
+              reason: typedDetails.reason,
+              detailText,
+              ...(typedDetails.reason === "user"
+                ? {}
+                : {
+                    message:
+                      typedDetails.reason === "error" ? typedDetails.message : undefined,
+                    closeCode: typedDetails.closeCode,
+                    closeReason: typedDetails.closeReason,
+                    context: typedDetails.context as Record<string, unknown> | undefined,
+                  }),
+            },
           });
           setMode("idle");
+
+          if (typedDetails.reason === "user") {
+            return;
+          }
+
+          const errorMessage =
+            typedDetails.reason === "error"
+              ? formatConversationError(
+                  typedDetails.message || typedDetails.closeReason || "Server error",
+                  {
+                    closeCode: typedDetails.closeCode,
+                    closeReason: typedDetails.closeReason,
+                    context: typedDetails.context,
+                  },
+                )
+              : typedDetails.closeReason ||
+                "Agent ended the conversation unexpectedly";
+
+          setLocalError(errorMessage);
+          void persistEndedSession({
+            statusMessage: `Conversation disconnected (${typedDetails.reason})`,
+            errorMessage,
+          });
         },
-        onError: (message) => {
-          setLocalError(message);
+        onError: (message, context) => {
+          const formatted = formatConversationError(message, context);
+          console.error("[concierge-doctor] ElevenLabs onError", {
+            message,
+            context,
+            formatted,
+          });
+          setLocalError(formatted);
           pushEvent({
             at: new Date().toISOString(),
             type: "error",
-            message,
+            message: formatted,
+            data: {
+              message,
+              context: context as Record<string, unknown> | undefined,
+            },
           });
         },
         onMessage: ({ message, role }) => {
@@ -521,6 +686,7 @@ function ConciergeDoctorExperience() {
           recomputeLocalMetrics();
         },
         onGuardrailTriggered: () => {
+          console.warn("[concierge-doctor] Guardrail triggered");
           pushEvent({
             at: new Date().toISOString(),
             type: "guardrail",
@@ -528,9 +694,14 @@ function ConciergeDoctorExperience() {
             data: { level: "warning" },
           });
         },
+        onDebug: (props) => {
+          console.debug("[concierge-doctor] ElevenLabs debug", props);
+        },
       });
     } catch (err) {
-      setLocalError(getErrorMessage(err) || "Failed to start concierge conversation");
+      const message = getErrorMessage(err) || "Failed to start concierge conversation";
+      console.error("[concierge-doctor] Failed to start conversation", err);
+      setLocalError(message);
       setActiveSessionId(null);
       activeSessionIdRef.current = null;
     }

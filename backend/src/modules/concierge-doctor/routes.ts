@@ -390,11 +390,28 @@ conciergeDoctorApp.openapi(startSessionRoute, async (c) => {
   const explanationLevel = body.explanationLevel ?? 50;
 
   try {
-    const { agentId } = await ensureConciergeAgent({
-      // Keep remote agent config aligned with local defaults (TTS model, monitoring, etc.).
-      forceSync: body.forceSyncAgent ?? true,
+    const forceSync = body.forceSyncAgent ?? true;
+    console.info("[concierge-doctor] Starting session", {
+      communicationStyle,
+      explanationLevel,
+      forceSync,
     });
+
+    const { agentId, created } = await ensureConciergeAgent({
+      // Keep remote agent config aligned with local defaults (TTS model, monitoring, etc.).
+      forceSync,
+    });
+    console.info("[concierge-doctor] Ensured ElevenLabs agent", {
+      agentId,
+      created,
+      forceSync,
+    });
+
     const credentials = await createConversationCredentials({ agentId });
+    console.info("[concierge-doctor] Issued WebRTC conversation token", {
+      agentId,
+      conversationId: credentials.conversationId,
+    });
 
     const [row] = await db
       .insert(conciergeSessions)
@@ -439,6 +456,12 @@ conciergeDoctorApp.openapi(startSessionRoute, async (c) => {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to start concierge session";
+    console.error("[concierge-doctor] Failed to start session", {
+      communicationStyle,
+      explanationLevel,
+      error: message,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return c.json({ error: message }, 500);
   }
 });
@@ -475,6 +498,11 @@ conciergeDoctorApp.openapi(updateSessionRoute, async (c) => {
     let nextTranscript = body.transcript;
 
     if (body.syncRemoteMetrics && conversationId) {
+      console.info("[concierge-doctor] Syncing remote conversation metrics", {
+        sessionId: existing.id,
+        conversationId,
+        status: body.status ?? existing.status,
+      });
       const remote = await fetchConversationDetails(conversationId);
       nextMetrics = {
         ...nextMetrics,
@@ -544,6 +572,11 @@ conciergeDoctorApp.openapi(updateSessionRoute, async (c) => {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to update concierge session";
+    console.error("[concierge-doctor] Failed to update session", {
+      sessionId: id,
+      error: message,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return c.json({ error: message }, 500);
   }
 });

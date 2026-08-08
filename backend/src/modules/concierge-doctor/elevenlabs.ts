@@ -115,15 +115,24 @@ function agentPlatformSettings(): ElevenLabs.AgentPlatformSettingsRequestModel {
       focus: { isEnabled: true },
       promptInjection: { isEnabled: true },
       content: {
+        // Medical symptom talk is the product. Built-in medical/legal filtering
+        // ends the call (default trigger_action) as soon as users describe pain.
+        // Keep self-harm protection; rely on the custom rule below for diagnosis/Rx.
+        executionMode: "blocking",
         config: {
           medicalAndLegalInformation: {
-            isEnabled: true,
+            isEnabled: false,
             threshold: 0.55,
           },
           selfHarm: {
             isEnabled: true,
             threshold: 0.3,
           },
+        },
+        triggerAction: {
+          type: "retry",
+          feedback:
+            "Reason: {{trigger_reason}}. Stay within safe triage guidance. Do not diagnose or prescribe.",
         },
       },
       custom: {
@@ -152,27 +161,48 @@ function agentPlatformSettings(): ElevenLabs.AgentPlatformSettingsRequestModel {
 
 async function createAgent(): Promise<string> {
   const client = getClient();
-  const created = await client.conversationalAi.agents.create({
-    name: CONCIERGE_AGENT_NAME,
-    tags: ["bond", "concierge-doctor"],
-    conversationConfig: agentConversationConfig("balanced"),
-    platformSettings: agentPlatformSettings(),
-  });
+  console.info("[concierge-doctor] Creating ElevenLabs agent");
+  try {
+    const created = await client.conversationalAi.agents.create({
+      name: CONCIERGE_AGENT_NAME,
+      tags: ["bond", "concierge-doctor"],
+      conversationConfig: agentConversationConfig("balanced"),
+      platformSettings: agentPlatformSettings(),
+    });
 
-  if (!created.agentId) {
-    throw new Error("ElevenLabs agent create response missing agentId");
+    if (!created.agentId) {
+      throw new Error("ElevenLabs agent create response missing agentId");
+    }
+    console.info("[concierge-doctor] Created ElevenLabs agent", {
+      agentId: created.agentId,
+    });
+    return created.agentId;
+  } catch (error) {
+    console.error("[concierge-doctor] ElevenLabs agent create failed", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
   }
-  return created.agentId;
 }
 
 async function syncAgentConfig(agentId: string): Promise<void> {
   const client = getClient();
-  await client.conversationalAi.agents.update(agentId, {
-    name: CONCIERGE_AGENT_NAME,
-    tags: ["bond", "concierge-doctor"],
-    conversationConfig: agentConversationConfig("balanced"),
-    platformSettings: agentPlatformSettings(),
-  });
+  console.info("[concierge-doctor] Syncing ElevenLabs agent config", { agentId });
+  try {
+    await client.conversationalAi.agents.update(agentId, {
+      name: CONCIERGE_AGENT_NAME,
+      tags: ["bond", "concierge-doctor"],
+      conversationConfig: agentConversationConfig("balanced"),
+      platformSettings: agentPlatformSettings(),
+    });
+    console.info("[concierge-doctor] Synced ElevenLabs agent config", { agentId });
+  } catch (error) {
+    console.error("[concierge-doctor] ElevenLabs agent sync failed", {
+      agentId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
 }
 
 export async function ensureConciergeAgent(options?: {
@@ -234,7 +264,7 @@ export async function fetchConversationDetails(
   try {
     const client = getClient();
     const details = await client.conversationalAi.conversations.get(conversationId);
-    return {
+    const remote = {
       conversationId,
       status: details.status,
       transcript: (details.transcript ?? []).map((entry) => ({
@@ -245,7 +275,32 @@ export async function fetchConversationDetails(
       metadata: details.metadata,
       analysis: details.analysis,
     };
-  } catch {
+
+    const terminationReason = details.metadata?.terminationReason;
+    const remoteError = details.metadata?.error;
+    if (terminationReason || remoteError || details.status === "failed") {
+      console.error("[concierge-doctor] ElevenLabs conversation ended with failure detail", {
+        conversationId,
+        status: details.status,
+        terminationReason,
+        error: remoteError,
+        callDurationSecs: details.metadata?.callDurationSecs,
+      });
+    } else {
+      console.info("[concierge-doctor] Fetched ElevenLabs conversation details", {
+        conversationId,
+        status: details.status,
+        callDurationSecs: details.metadata?.callDurationSecs,
+        terminationReason: terminationReason ?? null,
+      });
+    }
+
+    return remote;
+  } catch (error) {
+    console.error("[concierge-doctor] Failed to fetch ElevenLabs conversation details", {
+      conversationId,
+      error: error instanceof Error ? error.message : String(error),
+    });
     return null;
   }
 }
@@ -284,6 +339,15 @@ export function extractMetricsFromRemote(
     charging: metadata?.charging ?? null,
     featuresUsage: metadata?.featuresUsage ?? null,
     terminationReason: metadata?.terminationReason ?? null,
+    elevenLabsErrorCode:
+      metadata && "error" in metadata && metadata.error && typeof metadata.error === "object"
+        ? ((metadata.error as { code?: unknown }).code ?? null)
+        : null,
+    elevenLabsErrorReason:
+      metadata && "error" in metadata && metadata.error && typeof metadata.error === "object"
+        ? ((metadata.error as { reason?: unknown }).reason ?? null)
+        : null,
+    remoteStatus: remote?.status ?? null,
     analysisSummary: remote?.analysis?.transcriptSummary ?? null,
     ttsModel: "eleven_flash_v2",
     asrProvider: "scribe_realtime",
