@@ -26,6 +26,56 @@ export type UpdateAgent = {
     description?: string;
 };
 
+export type SpeechSession = {
+    id: number;
+    title: string;
+    status: 'active' | 'ended';
+    model: string;
+    voice: string;
+    startedAt: string;
+    endedAt: string | null;
+    durationMs: number | null;
+    transcript: Array<SpeechTranscriptEntry>;
+    createdAt: string;
+    updatedAt: string;
+};
+
+export type SpeechTranscriptEntry = {
+    role: 'user' | 'assistant';
+    text: string;
+    at: string;
+};
+
+export type SpeechClientSecret = {
+    value: string;
+    expiresAt?: number;
+    model: string;
+    voice: string;
+};
+
+export type SpeechSessionApiError = {
+    error: string;
+};
+
+export type CreateSpeechClientSecret = {
+    model?: string;
+    voice?: string;
+};
+
+export type CreateSpeechSession = {
+    title?: string;
+    model?: string;
+    voice?: string;
+};
+
+export type UpdateSpeechSession = {
+    title?: string;
+    status?: 'active' | 'ended';
+    endedAt?: string;
+    durationMs?: number;
+    transcript?: Array<SpeechTranscriptEntry>;
+};
+
 export type ListAgentsData = {
     body?: never;
     path?: never;
@@ -138,3 +188,141 @@ export type UpdateAgentResponses = {
 };
 
 export type UpdateAgentResponse = UpdateAgentResponses[keyof UpdateAgentResponses];
+
+export type ListSpeechSessionsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/speech-sessions';
+};
+
+export type ListSpeechSessionsResponses = {
+    /**
+     * All speech sessions
+     */
+    200: Array<SpeechSession>;
+};
+
+export type ListSpeechSessionsResponse = ListSpeechSessionsResponses[keyof ListSpeechSessionsResponses];
+
+export type CreateSpeechSessionData = {
+    body: CreateSpeechSession;
+    path?: never;
+    query?: never;
+    url: '/speech-sessions';
+};
+
+export type CreateSpeechSessionResponses = {
+    /**
+     * Speech session created
+     */
+    201: SpeechSession;
+};
+
+export type CreateSpeechSessionResponse = CreateSpeechSessionResponses[keyof CreateSpeechSessionResponses];
+
+export type CreateSpeechClientSecretData = {
+    body?: CreateSpeechClientSecret;
+    path?: never;
+    query?: never;
+    url: '/speech-sessions/client-secret';
+};
+
+export type CreateSpeechClientSecretErrors = {
+    /**
+     * Failed to mint client secret
+     */
+    500: SpeechSessionApiError;
+};
+
+export type CreateSpeechClientSecretError = CreateSpeechClientSecretErrors[keyof CreateSpeechClientSecretErrors];
+
+export type CreateSpeechClientSecretResponses = {
+    /**
+     * Ephemeral client secret
+     */
+    200: SpeechClientSecret;
+};
+
+export type CreateSpeechClientSecretResponse = CreateSpeechClientSecretResponses[keyof CreateSpeechClientSecretResponses];
+
+export type DeleteSpeechSessionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/speech-sessions/{id}';
+};
+
+export type DeleteSpeechSessionErrors = {
+    /**
+     * Speech session not found
+     */
+    404: SpeechSessionApiError;
+};
+
+export type DeleteSpeechSessionError = DeleteSpeechSessionErrors[keyof DeleteSpeechSessionErrors];
+
+export type DeleteSpeechSessionResponses = {
+    /**
+     * Speech session deleted
+     */
+    204: void;
+};
+
+export type DeleteSpeechSessionResponse = DeleteSpeechSessionResponses[keyof DeleteSpeechSessionResponses];
+
+export type GetSpeechSessionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/speech-sessions/{id}';
+};
+
+export type GetSpeechSessionErrors = {
+    /**
+     * Speech session not found
+     */
+    404: SpeechSessionApiError;
+};
+
+export type GetSpeechSessionError = GetSpeechSessionErrors[keyof GetSpeechSessionErrors];
+
+export type GetSpeechSessionResponses = {
+    /**
+     * Speech session found
+     */
+    200: SpeechSession;
+};
+
+export type GetSpeechSessionResponse = GetSpeechSessionResponses[keyof GetSpeechSessionResponses];
+
+export type UpdateSpeechSessionData = {
+    body: UpdateSpeechSession;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/speech-sessions/{id}';
+};
+
+export type UpdateSpeechSessionErrors = {
+    /**
+     * Speech session not found
+     */
+    404: SpeechSessionApiError;
+};
+
+export type UpdateSpeechSessionError = UpdateSpeechSessionErrors[keyof UpdateSpeechSessionErrors];
+
+export type UpdateSpeechSessionResponses = {
+    /**
+     * Speech session updated
+     */
+    200: SpeechSession;
+};
+
+export type UpdateSpeechSessionResponse = UpdateSpeechSessionResponses[keyof UpdateSpeechSessionResponses];

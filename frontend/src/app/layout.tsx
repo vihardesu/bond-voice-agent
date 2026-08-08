@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 
+import { AppTopbar } from "@/components/layout/app-topbar";
 import { QueryProvider } from "@/providers/query-provider";
 import { RouteProvider } from "@/providers/route-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
@@ -31,7 +32,10 @@ export default function RootLayout({
       <body className="bg-primary font-body antialiased">
         <RouteProvider>
           <ThemeProvider>
-            <QueryProvider>{children}</QueryProvider>
+            <QueryProvider>
+              <AppTopbar />
+              {children}
+            </QueryProvider>
           </ThemeProvider>
         </RouteProvider>
       </body>

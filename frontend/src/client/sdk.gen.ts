@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateAgentData, CreateAgentResponses, DeleteAgentData, DeleteAgentErrors, DeleteAgentResponses, GetAgentData, GetAgentErrors, GetAgentResponses, ListAgentsData, ListAgentsResponses, UpdateAgentData, UpdateAgentErrors, UpdateAgentResponses } from './types.gen';
+import type { CreateAgentData, CreateAgentResponses, CreateSpeechClientSecretData, CreateSpeechClientSecretErrors, CreateSpeechClientSecretResponses, CreateSpeechSessionData, CreateSpeechSessionResponses, DeleteAgentData, DeleteAgentErrors, DeleteAgentResponses, DeleteSpeechSessionData, DeleteSpeechSessionErrors, DeleteSpeechSessionResponses, GetAgentData, GetAgentErrors, GetAgentResponses, GetSpeechSessionData, GetSpeechSessionErrors, GetSpeechSessionResponses, ListAgentsData, ListAgentsResponses, ListSpeechSessionsData, ListSpeechSessionsResponses, UpdateAgentData, UpdateAgentErrors, UpdateAgentResponses, UpdateSpeechSessionData, UpdateSpeechSessionErrors, UpdateSpeechSessionResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -50,6 +50,57 @@ export const getAgent = <ThrowOnError extends boolean = false>(options: Options<
  */
 export const updateAgent = <ThrowOnError extends boolean = false>(options: Options<UpdateAgentData, ThrowOnError>): RequestResult<UpdateAgentResponses, UpdateAgentErrors, ThrowOnError> => (options.client ?? client).patch<UpdateAgentResponses, UpdateAgentErrors, ThrowOnError>({
     url: '/agents/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List speech sessions
+ */
+export const listSpeechSessions = <ThrowOnError extends boolean = false>(options?: Options<ListSpeechSessionsData, ThrowOnError>): RequestResult<ListSpeechSessionsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListSpeechSessionsResponses, unknown, ThrowOnError>({ url: '/speech-sessions', ...options });
+
+/**
+ * Create a speech session
+ */
+export const createSpeechSession = <ThrowOnError extends boolean = false>(options: Options<CreateSpeechSessionData, ThrowOnError>): RequestResult<CreateSpeechSessionResponses, unknown, ThrowOnError> => (options.client ?? client).post<CreateSpeechSessionResponses, unknown, ThrowOnError>({
+    url: '/speech-sessions',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Create an OpenAI Realtime ephemeral client secret
+ */
+export const createSpeechClientSecret = <ThrowOnError extends boolean = false>(options?: Options<CreateSpeechClientSecretData, ThrowOnError>): RequestResult<CreateSpeechClientSecretResponses, CreateSpeechClientSecretErrors, ThrowOnError> => (options?.client ?? client).post<CreateSpeechClientSecretResponses, CreateSpeechClientSecretErrors, ThrowOnError>({
+    url: '/speech-sessions/client-secret',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers
+    }
+});
+
+/**
+ * Delete a speech session
+ */
+export const deleteSpeechSession = <ThrowOnError extends boolean = false>(options: Options<DeleteSpeechSessionData, ThrowOnError>): RequestResult<DeleteSpeechSessionResponses, DeleteSpeechSessionErrors, ThrowOnError> => (options.client ?? client).delete<DeleteSpeechSessionResponses, DeleteSpeechSessionErrors, ThrowOnError>({ url: '/speech-sessions/{id}', ...options });
+
+/**
+ * Get a speech session by id
+ */
+export const getSpeechSession = <ThrowOnError extends boolean = false>(options: Options<GetSpeechSessionData, ThrowOnError>): RequestResult<GetSpeechSessionResponses, GetSpeechSessionErrors, ThrowOnError> => (options.client ?? client).get<GetSpeechSessionResponses, GetSpeechSessionErrors, ThrowOnError>({ url: '/speech-sessions/{id}', ...options });
+
+/**
+ * Update a speech session
+ */
+export const updateSpeechSession = <ThrowOnError extends boolean = false>(options: Options<UpdateSpeechSessionData, ThrowOnError>): RequestResult<UpdateSpeechSessionResponses, UpdateSpeechSessionErrors, ThrowOnError> => (options.client ?? client).patch<UpdateSpeechSessionResponses, UpdateSpeechSessionErrors, ThrowOnError>({
+    url: '/speech-sessions/{id}',
     ...options,
     headers: {
         'Content-Type': 'application/json',

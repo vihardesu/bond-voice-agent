@@ -2,7 +2,7 @@ import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 
 import { db } from "../db/index.js";
-import { agents, type Agent } from "../db/schema.js";
+import { agents, type Agent } from "../db/tables/agents.js";
 import {
   AgentIdParamSchema,
   AgentSchema,

@@ -31,6 +31,13 @@ npm run generate:api   # requires backend running
 npm run dev
 ```
 
+## Features
+
+- **Agents** (`/`) — manage voice agent configs
+- **Speech** (`/speech`) — OpenAI Realtime speech-to-speech conversations with persisted session history (duration, start/end, transcript)
+
+Backend speech module lives at `backend/src/modules/speech-sessions/`. Set `OPENAI_API_KEY` in `backend/.env` before starting a live conversation.
+
 ## Feature workflow
 
 See [`.agents/skills/feature-flow/SKILL.md`](.agents/skills/feature-flow/SKILL.md) for the full path:

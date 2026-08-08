@@ -3,8 +3,8 @@
 import { type DefaultError, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { createAgent, deleteAgent, getAgent, listAgents, type Options, updateAgent } from '../sdk.gen';
-import type { CreateAgentData, CreateAgentResponse, DeleteAgentData, DeleteAgentError, DeleteAgentResponse, GetAgentData, GetAgentError, GetAgentResponse, ListAgentsData, ListAgentsResponse, UpdateAgentData, UpdateAgentError, UpdateAgentResponse } from '../types.gen';
+import { createAgent, createSpeechClientSecret, createSpeechSession, deleteAgent, deleteSpeechSession, getAgent, getSpeechSession, listAgents, listSpeechSessions, type Options, updateAgent, updateSpeechSession } from '../sdk.gen';
+import type { CreateAgentData, CreateAgentResponse, CreateSpeechClientSecretData, CreateSpeechClientSecretError, CreateSpeechClientSecretResponse, CreateSpeechSessionData, CreateSpeechSessionResponse, DeleteAgentData, DeleteAgentError, DeleteAgentResponse, DeleteSpeechSessionData, DeleteSpeechSessionError, DeleteSpeechSessionResponse, GetAgentData, GetAgentError, GetAgentResponse, GetSpeechSessionData, GetSpeechSessionError, GetSpeechSessionResponse, ListAgentsData, ListAgentsResponse, ListSpeechSessionsData, ListSpeechSessionsResponse, UpdateAgentData, UpdateAgentError, UpdateAgentResponse, UpdateSpeechSessionData, UpdateSpeechSessionError, UpdateSpeechSessionResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -116,6 +116,110 @@ export const updateAgentMutation = (options?: Partial<Options<UpdateAgentData>>)
     const mutationOptions: UseMutationOptions<UpdateAgentResponse, UpdateAgentError, Options<UpdateAgentData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await updateAgent({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const listSpeechSessionsQueryKey = (options?: Options<ListSpeechSessionsData>) => createQueryKey('listSpeechSessions', options);
+
+/**
+ * List speech sessions
+ */
+export const listSpeechSessionsOptions = (options?: Options<ListSpeechSessionsData>) => queryOptions<ListSpeechSessionsResponse, DefaultError, ListSpeechSessionsResponse, ReturnType<typeof listSpeechSessionsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listSpeechSessions({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listSpeechSessionsQueryKey(options)
+});
+
+/**
+ * Create a speech session
+ */
+export const createSpeechSessionMutation = (options?: Partial<Options<CreateSpeechSessionData>>): UseMutationOptions<CreateSpeechSessionResponse, DefaultError, Options<CreateSpeechSessionData>> => {
+    const mutationOptions: UseMutationOptions<CreateSpeechSessionResponse, DefaultError, Options<CreateSpeechSessionData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await createSpeechSession({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Create an OpenAI Realtime ephemeral client secret
+ */
+export const createSpeechClientSecretMutation = (options?: Partial<Options<CreateSpeechClientSecretData>>): UseMutationOptions<CreateSpeechClientSecretResponse, CreateSpeechClientSecretError, Options<CreateSpeechClientSecretData>> => {
+    const mutationOptions: UseMutationOptions<CreateSpeechClientSecretResponse, CreateSpeechClientSecretError, Options<CreateSpeechClientSecretData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await createSpeechClientSecret({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Delete a speech session
+ */
+export const deleteSpeechSessionMutation = (options?: Partial<Options<DeleteSpeechSessionData>>): UseMutationOptions<DeleteSpeechSessionResponse, DeleteSpeechSessionError, Options<DeleteSpeechSessionData>> => {
+    const mutationOptions: UseMutationOptions<DeleteSpeechSessionResponse, DeleteSpeechSessionError, Options<DeleteSpeechSessionData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteSpeechSession({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getSpeechSessionQueryKey = (options: Options<GetSpeechSessionData>) => createQueryKey('getSpeechSession', options);
+
+/**
+ * Get a speech session by id
+ */
+export const getSpeechSessionOptions = (options: Options<GetSpeechSessionData>) => queryOptions<GetSpeechSessionResponse, GetSpeechSessionError, GetSpeechSessionResponse, ReturnType<typeof getSpeechSessionQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getSpeechSession({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getSpeechSessionQueryKey(options)
+});
+
+/**
+ * Update a speech session
+ */
+export const updateSpeechSessionMutation = (options?: Partial<Options<UpdateSpeechSessionData>>): UseMutationOptions<UpdateSpeechSessionResponse, UpdateSpeechSessionError, Options<UpdateSpeechSessionData>> => {
+    const mutationOptions: UseMutationOptions<UpdateSpeechSessionResponse, UpdateSpeechSessionError, Options<UpdateSpeechSessionData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateSpeechSession({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
