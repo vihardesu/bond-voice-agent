@@ -62,6 +62,12 @@ export type Level3DraftSettings = {
   personaPreset: (typeof PERSONA_PRESETS)[number];
   promptProfile: (typeof PROMPT_PROFILES)[number];
   enabledTools: Array<(typeof TOOL_OPTIONS)[number]>;
+  displayName: string;
+  systemPrompt: string;
+  firstMessage: string;
+  asrKeywordsText: string;
+  interruptionIgnoreTermsText: string;
+  extraGuardrailPrompt: string;
 };
 
 export const DEFAULT_DRAFT_SETTINGS: Level3DraftSettings = {
@@ -78,7 +84,24 @@ export const DEFAULT_DRAFT_SETTINGS: Level3DraftSettings = {
   personaPreset: "mira",
   promptProfile: "warm_empathetic",
   enabledTools: [...TOOL_OPTIONS],
+  displayName: "",
+  systemPrompt: "",
+  firstMessage: "",
+  asrKeywordsText: "",
+  interruptionIgnoreTermsText: "",
+  extraGuardrailPrompt: "",
 };
+
+export function listToText(values: string[] | undefined): string {
+  return (values ?? []).join(", ");
+}
+
+export function textToList(value: string): string[] {
+  return value
+    .split(/[\n,]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
 
 export const LABELS = {
   variantLabel: {

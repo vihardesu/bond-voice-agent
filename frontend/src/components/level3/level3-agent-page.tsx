@@ -28,10 +28,12 @@ import {
   INTERRUPTION_MODES,
   LABELS,
   LLM_OPTIONS,
+  listToText,
   PERSONA_PRESETS,
   PROMPT_PROFILES,
   RESOLUTION_BIASES,
   SAFETY_POSTURES,
+  textToList,
   TOOL_OPTIONS,
   TTS_MODELS,
   TURN_EAGERNESS_OPTIONS,
@@ -40,6 +42,7 @@ import {
   type Level3DraftSettings,
 } from "@/components/level3/settings-options";
 import {
+  useComposeLevel3Defaults,
   useCreateLevel3Agent,
   useDeleteLevel3Agent,
   useDeleteLevel3Session,
@@ -177,6 +180,36 @@ function draftFromAgent(agent: Level3Agent): Level3DraftSettings {
     personaPreset: agent.personaPreset,
     promptProfile: agent.promptProfile,
     enabledTools: agent.enabledTools,
+    displayName: agent.displayName,
+    systemPrompt: agent.systemPrompt,
+    firstMessage: agent.firstMessage,
+    asrKeywordsText: listToText(agent.asrKeywords),
+    interruptionIgnoreTermsText: listToText(agent.interruptionIgnoreTerms),
+    extraGuardrailPrompt: agent.extraGuardrailPrompt,
+  };
+}
+
+function draftToBody(draft: Level3DraftSettings) {
+  return {
+    variantLabel: draft.variantLabel,
+    communicationStyle: draft.communicationStyle,
+    explanationLevel: draft.explanationLevel,
+    safetyPosture: draft.safetyPosture,
+    resolutionBias: draft.resolutionBias,
+    turnEagerness: draft.turnEagerness,
+    voicePreset: draft.voicePreset,
+    ttsModel: draft.ttsModel,
+    llm: draft.llm,
+    interruptionMode: draft.interruptionMode,
+    personaPreset: draft.personaPreset,
+    promptProfile: draft.promptProfile,
+    enabledTools: draft.enabledTools,
+    displayName: draft.displayName.trim(),
+    systemPrompt: draft.systemPrompt,
+    firstMessage: draft.firstMessage.trim(),
+    asrKeywords: textToList(draft.asrKeywordsText),
+    interruptionIgnoreTerms: textToList(draft.interruptionIgnoreTermsText),
+    extraGuardrailPrompt: draft.extraGuardrailPrompt.trim(),
   };
 }
 
@@ -220,6 +253,7 @@ function Level3AgentExperience() {
   const createAgent = useCreateLevel3Agent();
   const updateAgent = useUpdateLevel3Agent();
   const deleteAgent = useDeleteLevel3Agent();
+  const composeDefaults = useComposeLevel3Defaults();
   const startSession = useStartLevel3Session();
   const updateSession = useUpdateLevel3Session();
   const deleteSession = useDeleteLevel3Session();
@@ -791,10 +825,29 @@ function Level3AgentExperience() {
     });
   };
 
+  const handlePrefillFreeText = async () => {
+    setLocalError(null);
+    try {
+      const composed = await composeDefaults.mutateAsync({
+        body: draftToBody(draft),
+      });
+      setDraft((prev) => ({
+        ...prev,
+        displayName: composed.displayName,
+        systemPrompt: composed.systemPrompt,
+        firstMessage: composed.firstMessage,
+        asrKeywordsText: listToText(composed.asrKeywords),
+        interruptionIgnoreTermsText: listToText(composed.interruptionIgnoreTerms),
+      }));
+    } catch (err) {
+      setLocalError(getErrorMessage(err) || "Failed to compose defaults from dials");
+    }
+  };
+
   const handleCreateAgent = async () => {
     setLocalError(null);
     try {
-      const created = await createAgent.mutateAsync({ body: draft });
+      const created = await createAgent.mutateAsync({ body: draftToBody(draft) });
       setSelectedAgentId(created.id);
       setDraft(draftFromAgent(created));
     } catch (err) {
@@ -808,7 +861,7 @@ function Level3AgentExperience() {
     try {
       const updated = await updateAgent.mutateAsync({
         path: { id: String(selectedAgentId) },
-        body: draft,
+        body: draftToBody(draft),
       });
       setDraft(draftFromAgent(updated));
     } catch (err) {
@@ -817,7 +870,8 @@ function Level3AgentExperience() {
   };
 
   const mutationError = getErrorMessage(
-    createAgent.error ||
+    composeDefaults.error ||
+      createAgent.error ||
       updateAgent.error ||
       deleteAgent.error ||
       startSession.error ||
@@ -859,6 +913,15 @@ function Level3AgentExperience() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
+              <Button
+                size="md"
+                color="secondary"
+                onClick={handlePrefillFreeText}
+                isLoading={composeDefaults.isPending}
+                isDisabled={isLive || composeDefaults.isPending}
+              >
+                Prefill text from dials
+              </Button>
               <Button
                 size="md"
                 color="secondary"
@@ -1005,6 +1068,97 @@ function Level3AgentExperience() {
                 );
               })}
             </div>
+          </div>
+
+          <div className="flex flex-col gap-4 border-t border-secondary pt-4">
+            <div className="flex flex-col gap-1">
+              <h3 className="text-md font-semibold text-primary">Free-text overrides</h3>
+              <p className="text-sm text-tertiary">
+                Leave blank to use dial-composed defaults on save. Use “Prefill text from
+                dials” to load a starting prompt, then edit freely.
+              </p>
+            </div>
+
+            <label className="flex flex-col gap-2">
+              <span className="text-sm font-semibold text-secondary">Display name</span>
+              <input
+                className="rounded-lg border border-secondary bg-primary px-3 py-2 text-sm text-primary"
+                value={draft.displayName}
+                disabled={isLive}
+                maxLength={120}
+                placeholder="e.g. Mira Pilot — thorough intake"
+                onChange={(event) => patchDraft("displayName", event.target.value)}
+              />
+            </label>
+
+            <label className="flex flex-col gap-2">
+              <span className="text-sm font-semibold text-secondary">First message</span>
+              <textarea
+                className="min-h-20 rounded-lg border border-secondary bg-primary px-3 py-2 text-sm text-primary"
+                value={draft.firstMessage}
+                disabled={isLive}
+                maxLength={1000}
+                placeholder="What the agent says when the call starts"
+                onChange={(event) => patchDraft("firstMessage", event.target.value)}
+              />
+            </label>
+
+            <label className="flex flex-col gap-2">
+              <span className="text-sm font-semibold text-secondary">System prompt</span>
+              <textarea
+                className="min-h-56 rounded-lg border border-secondary bg-primary px-3 py-2 font-mono text-xs text-primary"
+                value={draft.systemPrompt}
+                disabled={isLive}
+                maxLength={20000}
+                placeholder="Full system prompt controlling how the agent responds"
+                onChange={(event) => patchDraft("systemPrompt", event.target.value)}
+              />
+            </label>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <label className="flex flex-col gap-2">
+                <span className="text-sm font-semibold text-secondary">
+                  ASR keywords (comma-separated)
+                </span>
+                <textarea
+                  className="min-h-24 rounded-lg border border-secondary bg-primary px-3 py-2 text-sm text-primary"
+                  value={draft.asrKeywordsText}
+                  disabled={isLive}
+                  placeholder="medication, pharmacy, refill"
+                  onChange={(event) => patchDraft("asrKeywordsText", event.target.value)}
+                />
+              </label>
+              <label className="flex flex-col gap-2">
+                <span className="text-sm font-semibold text-secondary">
+                  Interruption ignore terms (comma-separated)
+                </span>
+                <textarea
+                  className="min-h-24 rounded-lg border border-secondary bg-primary px-3 py-2 text-sm text-primary"
+                  value={draft.interruptionIgnoreTermsText}
+                  disabled={isLive}
+                  placeholder="uh huh, gotcha, okay"
+                  onChange={(event) =>
+                    patchDraft("interruptionIgnoreTermsText", event.target.value)
+                  }
+                />
+              </label>
+            </div>
+
+            <label className="flex flex-col gap-2">
+              <span className="text-sm font-semibold text-secondary">
+                Extra guardrail instruction
+              </span>
+              <textarea
+                className="min-h-24 rounded-lg border border-secondary bg-primary px-3 py-2 text-sm text-primary"
+                value={draft.extraGuardrailPrompt}
+                disabled={isLive}
+                maxLength={2000}
+                placeholder="Optional custom rule, e.g. never mention competitor clinics"
+                onChange={(event) =>
+                  patchDraft("extraGuardrailPrompt", event.target.value)
+                }
+              />
+            </label>
           </div>
         </div>
 

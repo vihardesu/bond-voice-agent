@@ -1,5 +1,7 @@
 import {
+  BACKCHANNEL_IGNORE_TERMS,
   composeAgentDisplayName,
+  DEFAULT_ASR_KEYWORDS,
   EXPLANATION_LEVEL_VALUES,
   PERSONA_PRESET_META,
   PROMPT_PROFILE_META,
@@ -97,10 +99,61 @@ ${toolLines.length > 0 ? toolLines.join("\n") : "- No client tools are enabled. 
 `;
 }
 
+export function resolveDisplayName(settings: Level3AgentSettings): string {
+  const override = settings.displayName.trim();
+  return override || composeAgentDisplayName(settings);
+}
+
+export function resolveSystemPrompt(settings: Level3AgentSettings): string {
+  const override = settings.systemPrompt.trim();
+  return override || buildLevel3SystemPrompt(settings);
+}
+
+export function resolveFirstMessage(settings: Level3AgentSettings): string {
+  const override = settings.firstMessage.trim();
+  return override || PERSONA_PRESET_META[settings.personaPreset].firstMessage;
+}
+
+export function resolveAsrKeywords(settings: Level3AgentSettings): string[] {
+  return settings.asrKeywords.length > 0
+    ? settings.asrKeywords
+    : [...DEFAULT_ASR_KEYWORDS];
+}
+
+export function resolveInterruptionIgnoreTerms(
+  settings: Level3AgentSettings,
+): string[] {
+  if (settings.interruptionIgnoreTerms.length > 0) {
+    return settings.interruptionIgnoreTerms;
+  }
+  return settings.interruptionMode === "ignore_backchannels"
+    ? [...BACKCHANNEL_IGNORE_TERMS]
+    : [];
+}
+
 export function buildLevel3AgentRemoteName(settings: Level3AgentSettings): string {
-  return `Bond L3 · ${composeAgentDisplayName(settings)}`;
+  return `Bond L3 · ${resolveDisplayName(settings)}`;
 }
 
 export function buildLevel3FirstMessage(settings: Level3AgentSettings): string {
-  return PERSONA_PRESET_META[settings.personaPreset].firstMessage;
+  return resolveFirstMessage(settings);
+}
+
+export function composeLevel3Defaults(settings: Level3AgentSettings): {
+  displayName: string;
+  systemPrompt: string;
+  firstMessage: string;
+  asrKeywords: string[];
+  interruptionIgnoreTerms: string[];
+} {
+  return {
+    displayName: composeAgentDisplayName(settings),
+    systemPrompt: buildLevel3SystemPrompt(settings),
+    firstMessage: PERSONA_PRESET_META[settings.personaPreset].firstMessage,
+    asrKeywords: [...DEFAULT_ASR_KEYWORDS],
+    interruptionIgnoreTerms:
+      settings.interruptionMode === "ignore_backchannels"
+        ? [...BACKCHANNEL_IGNORE_TERMS]
+        : [],
+  };
 }

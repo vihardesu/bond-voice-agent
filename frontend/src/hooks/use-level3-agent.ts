@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
+  composeLevel3DefaultsMutation,
   createLevel3AgentMutation,
   deleteLevel3AgentMutation,
   deleteLevel3SessionMutation,
@@ -31,6 +32,12 @@ export function useLevel3Agent(id: number | null) {
 
 export function useLevel3Sessions() {
   return useQuery(listLevel3SessionsOptions());
+}
+
+export function useComposeLevel3Defaults() {
+  return useMutation({
+    ...composeLevel3DefaultsMutation(),
+  });
 }
 
 export function useCreateLevel3Agent() {

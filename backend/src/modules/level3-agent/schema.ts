@@ -56,6 +56,11 @@ export const level3Agents = sqliteTable("level3_agents", {
     .notNull()
     .default("warm_empathetic"),
   enabledTools: text("enabled_tools").notNull().default("[]"),
+  systemPrompt: text("system_prompt").notNull().default(""),
+  firstMessage: text("first_message").notNull().default(""),
+  asrKeywords: text("asr_keywords").notNull().default("[]"),
+  interruptionIgnoreTerms: text("interruption_ignore_terms").notNull().default("[]"),
+  extraGuardrailPrompt: text("extra_guardrail_prompt").notNull().default(""),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .$defaultFn(() => new Date()),

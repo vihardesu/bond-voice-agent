@@ -315,8 +315,43 @@ export type Level3Agent = {
     personaPreset: 'mira' | 'alex' | 'jordan' | 'sam';
     promptProfile: 'warm_empathetic' | 'efficient_triage' | 'calm_navigator';
     enabledTools: Array<'update_clinical_context' | 'schedule_follow_up' | 'submit_pharmacy_request' | 'confirm_next_step' | 'request_human_handoff' | 'flag_watch_event'>;
+    systemPrompt: string;
+    firstMessage: string;
+    asrKeywords: Array<string>;
+    interruptionIgnoreTerms: Array<string>;
+    extraGuardrailPrompt: string;
     createdAt: string;
     updatedAt: string;
+};
+
+export type ComposeLevel3DefaultsResponse = {
+    displayName: string;
+    systemPrompt: string;
+    firstMessage: string;
+    asrKeywords: Array<string>;
+    interruptionIgnoreTerms: Array<string>;
+};
+
+export type Level3AgentSettings = {
+    variantLabel?: 'alpha' | 'beta' | 'pilot' | 'staging' | 'production' | 'experiment_a' | 'experiment_b';
+    communicationStyle?: 'patient' | 'balanced' | 'direct';
+    explanationLevel?: 'minimal' | 'concise' | 'balanced' | 'detailed' | 'thorough';
+    safetyPosture?: 'conservative' | 'balanced' | 'assertive';
+    resolutionBias?: 'fewest_steps' | 'thorough_intake';
+    turnEagerness?: 'patient' | 'normal' | 'eager';
+    voicePreset?: 'sarah' | 'jessica' | 'george' | 'brian' | 'laura';
+    ttsModel?: 'eleven_flash_v2' | 'eleven_turbo_v2';
+    llm?: 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gpt-4o-mini' | 'gpt-4.1-mini' | 'claude-haiku-4-5';
+    interruptionMode?: 'allow' | 'ignore_backchannels' | 'protect_tools';
+    personaPreset?: 'mira' | 'alex' | 'jordan' | 'sam';
+    promptProfile?: 'warm_empathetic' | 'efficient_triage' | 'calm_navigator';
+    enabledTools?: Array<'update_clinical_context' | 'schedule_follow_up' | 'submit_pharmacy_request' | 'confirm_next_step' | 'request_human_handoff' | 'flag_watch_event'>;
+    displayName?: string;
+    systemPrompt?: string;
+    firstMessage?: string;
+    asrKeywords?: Array<string>;
+    interruptionIgnoreTerms?: Array<string>;
+    extraGuardrailPrompt?: string;
 };
 
 export type CreateLevel3Agent = {
@@ -333,6 +368,12 @@ export type CreateLevel3Agent = {
     personaPreset?: 'mira' | 'alex' | 'jordan' | 'sam';
     promptProfile?: 'warm_empathetic' | 'efficient_triage' | 'calm_navigator';
     enabledTools?: Array<'update_clinical_context' | 'schedule_follow_up' | 'submit_pharmacy_request' | 'confirm_next_step' | 'request_human_handoff' | 'flag_watch_event'>;
+    displayName?: string;
+    systemPrompt?: string;
+    firstMessage?: string;
+    asrKeywords?: Array<string>;
+    interruptionIgnoreTerms?: Array<string>;
+    extraGuardrailPrompt?: string;
 };
 
 export type UpdateLevel3Agent = {
@@ -349,6 +390,12 @@ export type UpdateLevel3Agent = {
     personaPreset?: 'mira' | 'alex' | 'jordan' | 'sam';
     promptProfile?: 'warm_empathetic' | 'efficient_triage' | 'calm_navigator';
     enabledTools?: Array<'update_clinical_context' | 'schedule_follow_up' | 'submit_pharmacy_request' | 'confirm_next_step' | 'request_human_handoff' | 'flag_watch_event'>;
+    displayName?: string;
+    systemPrompt?: string;
+    firstMessage?: string;
+    asrKeywords?: Array<string>;
+    interruptionIgnoreTerms?: Array<string>;
+    extraGuardrailPrompt?: string;
 };
 
 export type StartLevel3SessionResponse = {
@@ -1010,6 +1057,22 @@ export type CreateLevel3AgentResponses = {
 };
 
 export type CreateLevel3AgentResponse = CreateLevel3AgentResponses[keyof CreateLevel3AgentResponses];
+
+export type ComposeLevel3DefaultsData = {
+    body: Level3AgentSettings;
+    path?: never;
+    query?: never;
+    url: '/level3-agents/compose-defaults';
+};
+
+export type ComposeLevel3DefaultsResponses = {
+    /**
+     * Composed defaults
+     */
+    200: ComposeLevel3DefaultsResponse;
+};
+
+export type ComposeLevel3DefaultsResponse2 = ComposeLevel3DefaultsResponses[keyof ComposeLevel3DefaultsResponses];
 
 export type DeleteLevel3AgentData = {
     body?: never;

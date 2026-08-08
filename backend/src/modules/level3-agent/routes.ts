@@ -12,10 +12,14 @@ import {
   syncRemoteLevel3Agent,
 } from "./elevenlabs.js";
 import {
-  composeAgentDisplayName,
+  composeLevel3Defaults,
+  resolveDisplayName,
+} from "./prompt.js";
+import {
   DEFAULT_LEVEL3_SETTINGS,
   explanationLevelNumber,
   normalizeEnabledTools,
+  normalizeStringList,
   TOOL_OPTIONS,
   type Level3AgentSettings,
   type ToolOption,
@@ -23,10 +27,12 @@ import {
 import { level3Agents, level3Sessions, type Level3Agent, type Level3Session } from "./schema.js";
 import {
   ClinicalContextSchema,
+  ComposeLevel3DefaultsResponseSchema,
   CreateLevel3AgentSchema,
   ErrorSchema,
   IdParamSchema,
   Level3AgentSchema,
+  Level3AgentSettingsSchema,
   Level3SessionSchema,
   StartLevel3SessionResponseSchema,
   StartLevel3SessionSchema,
@@ -70,6 +76,18 @@ function settingsFromBody(
     personaPreset: body.personaPreset ?? base.personaPreset,
     promptProfile: body.promptProfile ?? base.promptProfile,
     enabledTools: enabledTools.length > 0 ? enabledTools : [...TOOL_OPTIONS],
+    displayName: body.displayName ?? base.displayName,
+    systemPrompt: body.systemPrompt ?? base.systemPrompt,
+    firstMessage: body.firstMessage ?? base.firstMessage,
+    asrKeywords: normalizeStringList(
+      body.asrKeywords !== undefined ? body.asrKeywords : base.asrKeywords,
+    ),
+    interruptionIgnoreTerms: normalizeStringList(
+      body.interruptionIgnoreTerms !== undefined
+        ? body.interruptionIgnoreTerms
+        : base.interruptionIgnoreTerms,
+    ),
+    extraGuardrailPrompt: body.extraGuardrailPrompt ?? base.extraGuardrailPrompt,
   };
 }
 
@@ -90,6 +108,14 @@ function settingsFromRow(row: Level3Agent): Level3AgentSettings {
     enabledTools: normalizeEnabledTools(
       parseJson<ToolOption[]>(row.enabledTools, [...TOOL_OPTIONS]),
     ),
+    displayName: row.displayName,
+    systemPrompt: row.systemPrompt,
+    firstMessage: row.firstMessage,
+    asrKeywords: normalizeStringList(parseJson<string[]>(row.asrKeywords, [])),
+    interruptionIgnoreTerms: normalizeStringList(
+      parseJson<string[]>(row.interruptionIgnoreTerms, []),
+    ),
+    extraGuardrailPrompt: row.extraGuardrailPrompt,
   };
 }
 
@@ -97,11 +123,35 @@ function toAgentResponse(row: Level3Agent): Level3AgentResponse {
   const settings = settingsFromRow(row);
   return {
     id: row.id,
-    displayName: row.displayName,
     elevenLabsAgentId: row.elevenLabsAgentId,
     ...settings,
+    displayName: row.displayName,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+function agentRowValues(settings: Level3AgentSettings) {
+  return {
+    displayName: resolveDisplayName(settings),
+    variantLabel: settings.variantLabel,
+    communicationStyle: settings.communicationStyle,
+    explanationLevel: settings.explanationLevel,
+    safetyPosture: settings.safetyPosture,
+    resolutionBias: settings.resolutionBias,
+    turnEagerness: settings.turnEagerness,
+    voicePreset: settings.voicePreset,
+    ttsModel: settings.ttsModel,
+    llm: settings.llm,
+    interruptionMode: settings.interruptionMode,
+    personaPreset: settings.personaPreset,
+    promptProfile: settings.promptProfile,
+    enabledTools: JSON.stringify(settings.enabledTools),
+    systemPrompt: settings.systemPrompt.trim(),
+    firstMessage: settings.firstMessage.trim(),
+    asrKeywords: JSON.stringify(settings.asrKeywords),
+    interruptionIgnoreTerms: JSON.stringify(settings.interruptionIgnoreTerms),
+    extraGuardrailPrompt: settings.extraGuardrailPrompt.trim(),
   };
 }
 
@@ -196,6 +246,28 @@ const getAgentRoute = createRoute({
     404: {
       description: "Not found",
       content: { "application/json": { schema: ErrorSchema } },
+    },
+  },
+});
+
+const composeDefaultsRoute = createRoute({
+  method: "post",
+  path: "/level3-agents/compose-defaults",
+  tags: ["Level 3 Agent"],
+  summary: "Compose free-text defaults from typed Level 3 dials",
+  operationId: "composeLevel3Defaults",
+  request: {
+    body: {
+      content: { "application/json": { schema: Level3AgentSettingsSchema } },
+      required: true,
+    },
+  },
+  responses: {
+    200: {
+      description: "Composed defaults",
+      content: {
+        "application/json": { schema: ComposeLevel3DefaultsResponseSchema },
+      },
     },
   },
 });
@@ -677,31 +749,23 @@ level3AgentApp.openapi(listAgentsRoute, async (c) => {
   return c.json(rows.map(toAgentResponse), 200);
 });
 
+level3AgentApp.openapi(composeDefaultsRoute, async (c) => {
+  const body = c.req.valid("json");
+  const settings = settingsFromBody(body);
+  return c.json(composeLevel3Defaults(settings), 200);
+});
+
 level3AgentApp.openapi(createAgentRoute, async (c) => {
   const body = c.req.valid("json");
   const settings = settingsFromBody(body);
 
   try {
     const elevenLabsAgentId = await createRemoteLevel3Agent(settings);
-    const displayName = composeAgentDisplayName(settings);
     const [row] = await db
       .insert(level3Agents)
       .values({
-        displayName,
         elevenLabsAgentId,
-        variantLabel: settings.variantLabel,
-        communicationStyle: settings.communicationStyle,
-        explanationLevel: settings.explanationLevel,
-        safetyPosture: settings.safetyPosture,
-        resolutionBias: settings.resolutionBias,
-        turnEagerness: settings.turnEagerness,
-        voicePreset: settings.voicePreset,
-        ttsModel: settings.ttsModel,
-        llm: settings.llm,
-        interruptionMode: settings.interruptionMode,
-        personaPreset: settings.personaPreset,
-        promptProfile: settings.promptProfile,
-        enabledTools: JSON.stringify(settings.enabledTools),
+        ...agentRowValues(settings),
       })
       .returning();
 
@@ -731,25 +795,9 @@ level3AgentApp.openapi(updateAgentRoute, async (c) => {
 
   try {
     await syncRemoteLevel3Agent(existing.elevenLabsAgentId, settings);
-    const displayName = composeAgentDisplayName(settings);
     const [row] = await db
       .update(level3Agents)
-      .set({
-        displayName,
-        variantLabel: settings.variantLabel,
-        communicationStyle: settings.communicationStyle,
-        explanationLevel: settings.explanationLevel,
-        safetyPosture: settings.safetyPosture,
-        resolutionBias: settings.resolutionBias,
-        turnEagerness: settings.turnEagerness,
-        voicePreset: settings.voicePreset,
-        ttsModel: settings.ttsModel,
-        llm: settings.llm,
-        interruptionMode: settings.interruptionMode,
-        personaPreset: settings.personaPreset,
-        promptProfile: settings.promptProfile,
-        enabledTools: JSON.stringify(settings.enabledTools),
-      })
+      .set(agentRowValues(settings))
       .where(eq(level3Agents.id, Number(id)))
       .returning();
 

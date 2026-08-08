@@ -2,11 +2,12 @@ import { ElevenLabsClient, type ElevenLabs } from "@elevenlabs/elevenlabs-js";
 
 import {
   buildLevel3AgentRemoteName,
-  buildLevel3FirstMessage,
-  buildLevel3SystemPrompt,
+  resolveAsrKeywords,
+  resolveFirstMessage,
+  resolveInterruptionIgnoreTerms,
+  resolveSystemPrompt,
 } from "./prompt.js";
 import {
-  BACKCHANNEL_IGNORE_TERMS,
   explanationLevelNumber,
   VOICE_PRESET_IDS,
   type Level3AgentSettings,
@@ -95,7 +96,7 @@ function agentConversationConfig(
 
   return {
     agent: {
-      firstMessage: buildLevel3FirstMessage(settings),
+      firstMessage: resolveFirstMessage(settings),
       language: "en",
       disableFirstMessageInterruptions: settings.interruptionMode !== "allow",
       dynamicVariables: {
@@ -107,7 +108,7 @@ function agentConversationConfig(
         },
       },
       prompt: {
-        prompt: buildLevel3SystemPrompt(settings),
+        prompt: resolveSystemPrompt(settings),
         llm: settings.llm,
         temperature: 0.4,
         tools,
@@ -127,24 +128,13 @@ function agentConversationConfig(
     asr: {
       quality: "high",
       provider: "scribe_realtime",
-      keywords: [
-        "medication",
-        "pharmacy",
-        "Walgreens",
-        "CVS",
-        "refill",
-        "symptom",
-        "follow-up",
-      ],
+      keywords: resolveAsrKeywords(settings),
     },
     turn: {
       turnTimeout: 7,
       turnEagerness: settings.turnEagerness,
       turnModel: "turn_v3",
-      interruptionIgnoreTerms:
-        settings.interruptionMode === "ignore_backchannels"
-          ? BACKCHANNEL_IGNORE_TERMS
-          : [],
+      interruptionIgnoreTerms: resolveInterruptionIgnoreTerms(settings),
     },
     conversation: {
       maxDurationSeconds: 900,
@@ -165,7 +155,43 @@ function agentConversationConfig(
   };
 }
 
-function agentPlatformSettings(): ElevenLabs.AgentPlatformSettingsRequestModel {
+function agentPlatformSettings(
+  settings: Level3AgentSettings,
+): ElevenLabs.AgentPlatformSettingsRequestModel {
+  const customConfigs = [
+    {
+      isEnabled: true,
+      name: "No medical diagnoses or prescribing",
+      prompt:
+        "Block the agent from providing a definitive medical diagnosis, prescribing medication, or changing dosages. Allow empathy, triage-style next steps, and mock scheduling/pharmacy requests.",
+      executionMode: "blocking" as const,
+      model: "gemini-2.5-flash-lite" as const,
+      historyMessageCount: 2,
+      triggerAction: {
+        type: "retry" as const,
+        feedback:
+          "Reason: {{trigger_reason}}. Do not diagnose or prescribe. Offer a safe next step, ask for missing info, or hand off.",
+      },
+    },
+    ...(settings.extraGuardrailPrompt.trim()
+      ? [
+          {
+            isEnabled: true,
+            name: "Level 3 custom guardrail",
+            prompt: settings.extraGuardrailPrompt.trim(),
+            executionMode: "blocking" as const,
+            model: "gemini-2.5-flash-lite" as const,
+            historyMessageCount: 2,
+            triggerAction: {
+              type: "retry" as const,
+              feedback:
+                "Reason: {{trigger_reason}}. Follow the custom Level 3 guardrail and continue safely.",
+            },
+          },
+        ]
+      : []),
+  ];
+
   return {
     auth: {
       enableAuth: true,
@@ -194,22 +220,7 @@ function agentPlatformSettings(): ElevenLabs.AgentPlatformSettingsRequestModel {
       },
       custom: {
         config: {
-          configs: [
-            {
-              isEnabled: true,
-              name: "No medical diagnoses or prescribing",
-              prompt:
-                "Block the agent from providing a definitive medical diagnosis, prescribing medication, or changing dosages. Allow empathy, triage-style next steps, and mock scheduling/pharmacy requests.",
-              executionMode: "blocking",
-              model: "gemini-2.5-flash-lite",
-              historyMessageCount: 2,
-              triggerAction: {
-                type: "retry",
-                feedback:
-                  "Reason: {{trigger_reason}}. Do not diagnose or prescribe. Offer a safe next step, ask for missing info, or hand off.",
-              },
-            },
-          ],
+          configs: customConfigs,
         },
       },
     },
@@ -227,7 +238,7 @@ export async function createRemoteLevel3Agent(
     name,
     tags: ["bond", "level3-agent"],
     conversationConfig: agentConversationConfig(settings),
-    platformSettings: agentPlatformSettings(),
+    platformSettings: agentPlatformSettings(settings),
   });
 
   if (!created.agentId) {
@@ -252,7 +263,7 @@ export async function syncRemoteLevel3Agent(
     name,
     tags: ["bond", "level3-agent"],
     conversationConfig: agentConversationConfig(settings),
-    platformSettings: agentPlatformSettings(),
+    platformSettings: agentPlatformSettings(settings),
   });
 }
 

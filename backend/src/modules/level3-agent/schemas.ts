@@ -30,6 +30,11 @@ export const PromptProfileSchema = z.enum(PROMPT_PROFILES);
 export const ToolOptionSchema = z.enum(TOOL_OPTIONS);
 export const VariantLabelSchema = z.enum(VARIANT_LABELS);
 
+const StringListSchema = z
+  .array(z.string().trim().min(1).max(64))
+  .max(50)
+  .default([]);
+
 export const Level3AgentSettingsSchema = z
   .object({
     variantLabel: VariantLabelSchema.default("alpha"),
@@ -48,6 +53,12 @@ export const Level3AgentSettingsSchema = z
       .array(ToolOptionSchema)
       .min(1)
       .default([...TOOL_OPTIONS]),
+    displayName: z.string().max(120).optional().default(""),
+    systemPrompt: z.string().max(20000).optional().default(""),
+    firstMessage: z.string().max(1000).optional().default(""),
+    asrKeywords: StringListSchema,
+    interruptionIgnoreTerms: StringListSchema,
+    extraGuardrailPrompt: z.string().max(2000).optional().default(""),
   })
   .openapi("Level3AgentSettings");
 
@@ -77,10 +88,25 @@ export const Level3AgentSchema = z
     personaPreset: PersonaPresetSchema,
     promptProfile: PromptProfileSchema,
     enabledTools: z.array(ToolOptionSchema),
+    systemPrompt: z.string(),
+    firstMessage: z.string(),
+    asrKeywords: z.array(z.string()),
+    interruptionIgnoreTerms: z.array(z.string()),
+    extraGuardrailPrompt: z.string(),
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
   })
   .openapi("Level3Agent");
+
+export const ComposeLevel3DefaultsResponseSchema = z
+  .object({
+    displayName: z.string(),
+    systemPrompt: z.string(),
+    firstMessage: z.string(),
+    asrKeywords: z.array(z.string()),
+    interruptionIgnoreTerms: z.array(z.string()),
+  })
+  .openapi("ComposeLevel3DefaultsResponse");
 
 export const TranscriptEntrySchema = z
   .object({

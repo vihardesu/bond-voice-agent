@@ -1,4 +1,4 @@
-/** Strongly typed Level 3 agent knobs — no free-text harness inputs. */
+/** Level 3 agent knobs: typed harness dials plus optional free-text overrides. */
 
 export const COMMUNICATION_STYLES = ["patient", "balanced", "direct"] as const;
 export type CommunicationStyle = (typeof COMMUNICATION_STYLES)[number];
@@ -88,7 +88,29 @@ export type Level3AgentSettings = {
   personaPreset: PersonaPreset;
   promptProfile: PromptProfile;
   enabledTools: ToolOption[];
+  /** Empty = compose from dials on save/sync. */
+  displayName: string;
+  /** Empty = compose from dials on sync. */
+  systemPrompt: string;
+  /** Empty = persona preset first message on sync. */
+  firstMessage: string;
+  /** Empty = built-in clinical keyword defaults. */
+  asrKeywords: string[];
+  /** Empty = mode defaults (backchannels when ignore_backchannels). */
+  interruptionIgnoreTerms: string[];
+  /** Optional extra custom guardrail instruction. */
+  extraGuardrailPrompt: string;
 };
+
+export const DEFAULT_ASR_KEYWORDS = [
+  "medication",
+  "pharmacy",
+  "Walgreens",
+  "CVS",
+  "refill",
+  "symptom",
+  "follow-up",
+] as const;
 
 export const DEFAULT_LEVEL3_SETTINGS: Level3AgentSettings = {
   variantLabel: "alpha",
@@ -104,6 +126,12 @@ export const DEFAULT_LEVEL3_SETTINGS: Level3AgentSettings = {
   personaPreset: "mira",
   promptProfile: "warm_empathetic",
   enabledTools: [...TOOL_OPTIONS],
+  displayName: "",
+  systemPrompt: "",
+  firstMessage: "",
+  asrKeywords: [...DEFAULT_ASR_KEYWORDS],
+  interruptionIgnoreTerms: [],
+  extraGuardrailPrompt: "",
 };
 
 export const EXPLANATION_LEVEL_VALUES: Record<ExplanationLevel, number> = {
@@ -209,4 +237,13 @@ export function composeAgentDisplayName(settings: Level3AgentSettings): string {
 export function normalizeEnabledTools(tools: ToolOption[]): ToolOption[] {
   const unique = Array.from(new Set(tools));
   return TOOL_OPTIONS.filter((tool) => unique.includes(tool));
+}
+
+export function normalizeStringList(values: string[] | undefined, max = 50): string[] {
+  if (!values?.length) return [];
+  const cleaned = values
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0)
+    .slice(0, max);
+  return Array.from(new Set(cleaned));
 }
