@@ -10,6 +10,7 @@ const agentLinks = [
   { href: "/speech", label: "Level 1 Agent" },
   { href: "/concierge", label: "Level 2 Agent" },
   { href: "/level3", label: "Level 3 Agent" },
+  { href: "/level4", label: "Level 4 Agent" },
 ] as const;
 
 export function AppTopbar() {

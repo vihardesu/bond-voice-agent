@@ -20,3 +20,11 @@ export {
   type NewLevel3Agent,
   type NewLevel3Session,
 } from "../modules/level3-agent/schema.js";
+export {
+  level4Agents,
+  level4Sessions,
+  type Level4Agent,
+  type Level4Session,
+  type NewLevel4Agent,
+  type NewLevel4Session,
+} from "../modules/level4-agent/schema.js";

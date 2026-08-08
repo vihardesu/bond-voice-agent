@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { ActivityHeart, ArrowRight, Headphones01, Settings01 } from "@untitledui/icons";
+import {
+  ActivityHeart,
+  ArrowRight,
+  Database01,
+  Headphones01,
+  Settings01,
+} from "@untitledui/icons";
 
 import { Badge } from "@/components/base/badges/badges";
 import { cx } from "@/utils/cx";
@@ -46,6 +52,19 @@ const agents = [
       "bg-[radial-gradient(circle_at_18%_22%,rgba(129,140,248,0.34),transparent_44%),radial-gradient(circle_at_82%_78%,rgba(251,191,36,0.22),transparent_40%)]",
     icon: Settings01,
   },
+  {
+    href: "/level4",
+    level: "Level 4",
+    title: "Level 4 Agent",
+    subtitle: "Frozen Daphne v2 + memory",
+    description:
+      "Daphne v2 locked in with a session memory bank, Exa web search, and native tool-call typing sounds — same clinical tools as Level 3, without the settings dials.",
+    model: "memory bank · Exa · tool sounds",
+    accent: "from-teal-950 via-slate-900 to-violet-950",
+    panel:
+      "bg-[radial-gradient(circle_at_16%_24%,rgba(45,212,191,0.34),transparent_44%),radial-gradient(circle_at_84%_76%,rgba(167,139,250,0.24),transparent_40%)]",
+    icon: Database01,
+  },
 ] as const;
 
 export function AgentGallery() {
@@ -74,8 +93,9 @@ export function AgentGallery() {
               Choose who you want to talk to
             </h1>
             <p className="text-lg text-tertiary">
-              Three live voice agents. Start with a raw speech-to-speech baseline, step into a
-              fixed ElevenLabs concierge harness, or tune and compare Level 3 variants.
+              Four live voice agents. Start with a raw speech-to-speech baseline, step into a
+              fixed ElevenLabs concierge harness, tune Level 3 variants, or run frozen Daphne
+              v2 with a memory bank and Exa search.
             </p>
           </div>
         </header>

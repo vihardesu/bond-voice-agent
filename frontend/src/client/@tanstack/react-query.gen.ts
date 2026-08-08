@@ -3,8 +3,8 @@
 import { type DefaultError, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { composeLevel3Defaults, createAgent, createLevel3Agent, createSpeechClientSecret, createSpeechSession, deleteAgent, deleteConciergeDoctorSession, deleteLevel3Agent, deleteLevel3Session, deleteSpeechSession, ensureConciergeDoctorAgent, getAgent, getConciergeDoctorSession, getLevel3Agent, getLevel3Session, getSpeechSession, listAgents, listConciergeDoctorSessions, listLevel3Agents, listLevel3Sessions, listSpeechSessions, mockConciergePharmacyRequest, mockConciergeScheduleFollowUp, mockLevel3PharmacyRequest, mockLevel3ScheduleFollowUp, type Options, startConciergeDoctorSession, startLevel3Session, updateAgent, updateConciergeDoctorSession, updateLevel3Agent, updateLevel3Session, updateSpeechSession } from '../sdk.gen';
-import type { ComposeLevel3DefaultsData, ComposeLevel3DefaultsResponse2, CreateAgentData, CreateAgentResponse, CreateLevel3AgentData, CreateLevel3AgentError, CreateLevel3AgentResponse, CreateSpeechClientSecretData, CreateSpeechClientSecretError, CreateSpeechClientSecretResponse, CreateSpeechSessionData, CreateSpeechSessionResponse, DeleteAgentData, DeleteAgentError, DeleteAgentResponse, DeleteConciergeDoctorSessionData, DeleteConciergeDoctorSessionError, DeleteConciergeDoctorSessionResponse, DeleteLevel3AgentData, DeleteLevel3AgentError, DeleteLevel3AgentResponse, DeleteLevel3SessionData, DeleteLevel3SessionError, DeleteLevel3SessionResponse, DeleteSpeechSessionData, DeleteSpeechSessionError, DeleteSpeechSessionResponse, EnsureConciergeDoctorAgentData, EnsureConciergeDoctorAgentError, EnsureConciergeDoctorAgentResponse, GetAgentData, GetAgentError, GetAgentResponse, GetConciergeDoctorSessionData, GetConciergeDoctorSessionError, GetConciergeDoctorSessionResponse, GetLevel3AgentData, GetLevel3AgentError, GetLevel3AgentResponse, GetLevel3SessionData, GetLevel3SessionError, GetLevel3SessionResponse, GetSpeechSessionData, GetSpeechSessionError, GetSpeechSessionResponse, ListAgentsData, ListAgentsResponse, ListConciergeDoctorSessionsData, ListConciergeDoctorSessionsResponse, ListLevel3AgentsData, ListLevel3AgentsResponse, ListLevel3SessionsData, ListLevel3SessionsResponse, ListSpeechSessionsData, ListSpeechSessionsResponse, MockConciergePharmacyRequestData, MockConciergePharmacyRequestResponse, MockConciergeScheduleFollowUpData, MockConciergeScheduleFollowUpResponse, MockLevel3PharmacyRequestData, MockLevel3PharmacyRequestResponse, MockLevel3ScheduleFollowUpData, MockLevel3ScheduleFollowUpResponse, StartConciergeDoctorSessionData, StartConciergeDoctorSessionError, StartConciergeDoctorSessionResponse, StartLevel3SessionData, StartLevel3SessionError, StartLevel3SessionResponse2, UpdateAgentData, UpdateAgentError, UpdateAgentResponse, UpdateConciergeDoctorSessionData, UpdateConciergeDoctorSessionError, UpdateConciergeDoctorSessionResponse, UpdateLevel3AgentData, UpdateLevel3AgentError, UpdateLevel3AgentResponse, UpdateLevel3SessionData, UpdateLevel3SessionError, UpdateLevel3SessionResponse, UpdateSpeechSessionData, UpdateSpeechSessionError, UpdateSpeechSessionResponse } from '../types.gen';
+import { composeLevel3Defaults, createAgent, createLevel3Agent, createSpeechClientSecret, createSpeechSession, deleteAgent, deleteConciergeDoctorSession, deleteLevel3Agent, deleteLevel3Session, deleteLevel4Session, deleteSpeechSession, ensureConciergeDoctorAgent, getAgent, getConciergeDoctorSession, getLevel3Agent, getLevel3Session, getLevel4Agent, getLevel4Session, getSpeechSession, level4WebSearch, listAgents, listConciergeDoctorSessions, listLevel3Agents, listLevel3Sessions, listLevel4Sessions, listSpeechSessions, mockConciergePharmacyRequest, mockConciergeScheduleFollowUp, mockLevel3PharmacyRequest, mockLevel3ScheduleFollowUp, mockLevel4PharmacyRequest, mockLevel4ScheduleFollowUp, type Options, startConciergeDoctorSession, startLevel3Session, startLevel4Session, updateAgent, updateConciergeDoctorSession, updateLevel3Agent, updateLevel3Session, updateLevel4Session, updateSpeechSession } from '../sdk.gen';
+import type { ComposeLevel3DefaultsData, ComposeLevel3DefaultsResponse2, CreateAgentData, CreateAgentResponse, CreateLevel3AgentData, CreateLevel3AgentError, CreateLevel3AgentResponse, CreateSpeechClientSecretData, CreateSpeechClientSecretError, CreateSpeechClientSecretResponse, CreateSpeechSessionData, CreateSpeechSessionResponse, DeleteAgentData, DeleteAgentError, DeleteAgentResponse, DeleteConciergeDoctorSessionData, DeleteConciergeDoctorSessionError, DeleteConciergeDoctorSessionResponse, DeleteLevel3AgentData, DeleteLevel3AgentError, DeleteLevel3AgentResponse, DeleteLevel3SessionData, DeleteLevel3SessionError, DeleteLevel3SessionResponse, DeleteLevel4SessionData, DeleteLevel4SessionError, DeleteLevel4SessionResponse, DeleteSpeechSessionData, DeleteSpeechSessionError, DeleteSpeechSessionResponse, EnsureConciergeDoctorAgentData, EnsureConciergeDoctorAgentError, EnsureConciergeDoctorAgentResponse, GetAgentData, GetAgentError, GetAgentResponse, GetConciergeDoctorSessionData, GetConciergeDoctorSessionError, GetConciergeDoctorSessionResponse, GetLevel3AgentData, GetLevel3AgentError, GetLevel3AgentResponse, GetLevel3SessionData, GetLevel3SessionError, GetLevel3SessionResponse, GetLevel4AgentData, GetLevel4AgentError, GetLevel4AgentResponse, GetLevel4SessionData, GetLevel4SessionError, GetLevel4SessionResponse, GetSpeechSessionData, GetSpeechSessionError, GetSpeechSessionResponse, Level4WebSearchData, Level4WebSearchError, Level4WebSearchResponse2, ListAgentsData, ListAgentsResponse, ListConciergeDoctorSessionsData, ListConciergeDoctorSessionsResponse, ListLevel3AgentsData, ListLevel3AgentsResponse, ListLevel3SessionsData, ListLevel3SessionsResponse, ListLevel4SessionsData, ListLevel4SessionsResponse, ListSpeechSessionsData, ListSpeechSessionsResponse, MockConciergePharmacyRequestData, MockConciergePharmacyRequestResponse, MockConciergeScheduleFollowUpData, MockConciergeScheduleFollowUpResponse, MockLevel3PharmacyRequestData, MockLevel3PharmacyRequestResponse, MockLevel3ScheduleFollowUpData, MockLevel3ScheduleFollowUpResponse, MockLevel4PharmacyRequestData, MockLevel4PharmacyRequestResponse, MockLevel4ScheduleFollowUpData, MockLevel4ScheduleFollowUpResponse, StartConciergeDoctorSessionData, StartConciergeDoctorSessionError, StartConciergeDoctorSessionResponse, StartLevel3SessionData, StartLevel3SessionError, StartLevel3SessionResponse2, StartLevel4SessionData, StartLevel4SessionError, StartLevel4SessionResponse2, UpdateAgentData, UpdateAgentError, UpdateAgentResponse, UpdateConciergeDoctorSessionData, UpdateConciergeDoctorSessionError, UpdateConciergeDoctorSessionResponse, UpdateLevel3AgentData, UpdateLevel3AgentError, UpdateLevel3AgentResponse, UpdateLevel3SessionData, UpdateLevel3SessionError, UpdateLevel3SessionResponse, UpdateLevel4SessionData, UpdateLevel4SessionError, UpdateLevel4SessionResponse, UpdateSpeechSessionData, UpdateSpeechSessionError, UpdateSpeechSessionResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -583,6 +583,162 @@ export const startLevel3SessionMutation = (options?: Partial<Options<StartLevel3
     const mutationOptions: UseMutationOptions<StartLevel3SessionResponse2, StartLevel3SessionError, Options<StartLevel3SessionData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await startLevel3Session({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const listLevel4SessionsQueryKey = (options?: Options<ListLevel4SessionsData>) => createQueryKey('listLevel4Sessions', options);
+
+/**
+ * List Level 4 sessions
+ */
+export const listLevel4SessionsOptions = (options?: Options<ListLevel4SessionsData>) => queryOptions<ListLevel4SessionsResponse, DefaultError, ListLevel4SessionsResponse, ReturnType<typeof listLevel4SessionsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listLevel4Sessions({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listLevel4SessionsQueryKey(options)
+});
+
+/**
+ * Delete a Level 4 session
+ */
+export const deleteLevel4SessionMutation = (options?: Partial<Options<DeleteLevel4SessionData>>): UseMutationOptions<DeleteLevel4SessionResponse, DeleteLevel4SessionError, Options<DeleteLevel4SessionData>> => {
+    const mutationOptions: UseMutationOptions<DeleteLevel4SessionResponse, DeleteLevel4SessionError, Options<DeleteLevel4SessionData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteLevel4Session({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getLevel4SessionQueryKey = (options: Options<GetLevel4SessionData>) => createQueryKey('getLevel4Session', options);
+
+/**
+ * Get a Level 4 session
+ */
+export const getLevel4SessionOptions = (options: Options<GetLevel4SessionData>) => queryOptions<GetLevel4SessionResponse, GetLevel4SessionError, GetLevel4SessionResponse, ReturnType<typeof getLevel4SessionQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getLevel4Session({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getLevel4SessionQueryKey(options)
+});
+
+/**
+ * Update a Level 4 session
+ */
+export const updateLevel4SessionMutation = (options?: Partial<Options<UpdateLevel4SessionData>>): UseMutationOptions<UpdateLevel4SessionResponse, UpdateLevel4SessionError, Options<UpdateLevel4SessionData>> => {
+    const mutationOptions: UseMutationOptions<UpdateLevel4SessionResponse, UpdateLevel4SessionError, Options<UpdateLevel4SessionData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateLevel4Session({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Exa web search (debug / fallback)
+ */
+export const level4WebSearchMutation = (options?: Partial<Options<Level4WebSearchData>>): UseMutationOptions<Level4WebSearchResponse2, Level4WebSearchError, Options<Level4WebSearchData>> => {
+    const mutationOptions: UseMutationOptions<Level4WebSearchResponse2, Level4WebSearchError, Options<Level4WebSearchData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await level4WebSearch({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Mock retail pharmacy portal action
+ */
+export const mockLevel4PharmacyRequestMutation = (options?: Partial<Options<MockLevel4PharmacyRequestData>>): UseMutationOptions<MockLevel4PharmacyRequestResponse, DefaultError, Options<MockLevel4PharmacyRequestData>> => {
+    const mutationOptions: UseMutationOptions<MockLevel4PharmacyRequestResponse, DefaultError, Options<MockLevel4PharmacyRequestData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await mockLevel4PharmacyRequest({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Mock schedule follow-up
+ */
+export const mockLevel4ScheduleFollowUpMutation = (options?: Partial<Options<MockLevel4ScheduleFollowUpData>>): UseMutationOptions<MockLevel4ScheduleFollowUpResponse, DefaultError, Options<MockLevel4ScheduleFollowUpData>> => {
+    const mutationOptions: UseMutationOptions<MockLevel4ScheduleFollowUpResponse, DefaultError, Options<MockLevel4ScheduleFollowUpData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await mockLevel4ScheduleFollowUp({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getLevel4AgentQueryKey = (options?: Options<GetLevel4AgentData>) => createQueryKey('getLevel4Agent', options);
+
+/**
+ * Get the frozen Daphne v2 Level 4 agent (creates/syncs if needed)
+ */
+export const getLevel4AgentOptions = (options?: Options<GetLevel4AgentData>) => queryOptions<GetLevel4AgentResponse, GetLevel4AgentError, GetLevel4AgentResponse, ReturnType<typeof getLevel4AgentQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getLevel4Agent({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getLevel4AgentQueryKey(options)
+});
+
+/**
+ * Start a Level 4 conversation with an optional memory bank
+ */
+export const startLevel4SessionMutation = (options?: Partial<Options<StartLevel4SessionData>>): UseMutationOptions<StartLevel4SessionResponse2, StartLevel4SessionError, Options<StartLevel4SessionData>> => {
+    const mutationOptions: UseMutationOptions<StartLevel4SessionResponse2, StartLevel4SessionError, Options<StartLevel4SessionData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await startLevel4Session({
                 ...options,
                 ...fnOptions,
                 throwOnError: true

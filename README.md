@@ -37,12 +37,15 @@ npm run dev
 - **Level 1 Agent** (`/speech`) — OpenAI Realtime speech-to-speech baseline (no custom harness/prompt) with persisted session history
 - **Level 2 Agent** (`/concierge`) — ElevenLabs empathetic concierge doctor with empathy dials, structured clinical context, mock care actions/handoffs, guardrails, live observability, and historic sessions
 - **Level 3 Agent** (`/level3`) — tunable healthcare concierge builder: save typed harness settings as distinct ElevenLabs agents, converse with each, and keep Level 2-style observability
+- **Level 4 Agent** (`/level4`) — frozen Daphne v2 harness with a pre-call memory bank (`query_memory_bank`), Exa web search, native tool-call typing sounds, and full observability
 
 Backend speech module: `backend/src/modules/speech-sessions/` (`OPENAI_API_KEY`).
 
 Backend concierge module: `backend/src/modules/concierge-doctor/` (`ELEVENLABS_API_KEY`, optional `ELEVENLABS_CONCIERGE_AGENT_ID`).
 
 Backend Level 3 module: `backend/src/modules/level3-agent/` (`ELEVENLABS_API_KEY`).
+
+Backend Level 4 module: `backend/src/modules/level4-agent/` (`ELEVENLABS_API_KEY`, `EXA_API_KEY`).
 
 ## Feature workflow
 

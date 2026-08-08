@@ -416,6 +416,151 @@ export type StartLevel3Session = {
     forceSyncAgent?: boolean;
 };
 
+export type Level4Session = {
+    id: number;
+    agentId: number;
+    agentDisplayName: string;
+    title: string;
+    status: 'active' | 'ended';
+    memoryBank: string;
+    elevenLabsAgentId: string;
+    elevenLabsConversationId: string | null;
+    startedAt: string;
+    endedAt: string | null;
+    durationMs: number | null;
+    transcript: Array<Level4TranscriptEntry>;
+    clinicalContext: Level4ClinicalContext;
+    resolution: Level4Resolution;
+    events: Array<Level4ObservabilityEvent>;
+    metrics: Level4Metrics;
+    createdAt: string;
+    updatedAt: string;
+};
+
+export type Level4TranscriptEntry = {
+    role: 'user' | 'agent';
+    text: string;
+    at: string;
+};
+
+export type Level4ClinicalContext = {
+    symptom?: string;
+    duration?: string;
+    history?: string;
+    currentMedications?: string;
+    unknowns?: string;
+    notes?: string;
+};
+
+export type Level4Resolution = {
+    type: 'self_care_watch' | 'scheduled_follow_up' | 'pharmacy_request' | 'human_handoff' | 'emergency_care' | 'other';
+    summary: string;
+    confirmationId?: string;
+    reassurance?: string;
+    handoffReason?: string;
+    pharmacy?: string;
+    details?: {
+        [key: string]: unknown;
+    };
+} | null;
+
+export type Level4ObservabilityEvent = {
+    at: string;
+    type: 'status' | 'transcript' | 'ping' | 'vad' | 'interruption' | 'tool_request' | 'tool_response' | 'watch' | 'guardrail' | 'error' | 'metric' | 'mode';
+    message: string;
+    data?: {
+        [key: string]: unknown;
+    };
+};
+
+export type Level4Metrics = {
+    avgLatencyMs?: number | null;
+    latestLatencyMs?: number | null;
+    latencySampleCount?: number;
+    turnCount?: number;
+    toolCallCount?: number;
+    watchEventCount?: number;
+    interruptionCount?: number;
+    avgVadScore?: number | null;
+    elevenLabsCostCredits?: number | null;
+    elevenLabsCostUsd?: number | null;
+    callDurationSecs?: number | null;
+    charging?: unknown;
+    featuresUsage?: unknown;
+    terminationReason?: string | null;
+    analysisSummary?: string | null;
+    ttsModel?: string;
+    asrProvider?: string;
+    turnModel?: string;
+    llm?: string;
+    voicePreset?: string;
+    [key: string]: unknown;
+};
+
+export type Level4Error = {
+    error: string;
+};
+
+export type UpdateLevel4Session = {
+    title?: string;
+    status?: 'active' | 'ended';
+    endedAt?: string;
+    durationMs?: number;
+    transcript?: Array<Level4TranscriptEntry>;
+    clinicalContext?: Level4ClinicalContext;
+    resolution?: Level4Resolution;
+    events?: Array<Level4ObservabilityEvent>;
+    appendEvents?: Array<Level4ObservabilityEvent>;
+    metrics?: Level4Metrics;
+    elevenLabsConversationId?: string;
+    syncRemoteMetrics?: boolean;
+};
+
+export type Level4WebSearchResponse = {
+    query: string;
+    results: Array<{
+        title: string;
+        url: string;
+        snippet: string;
+    }>;
+};
+
+export type Level4WebSearchRequest = {
+    query: string;
+};
+
+export type Level4Agent = {
+    id: number;
+    key: string;
+    displayName: string;
+    elevenLabsAgentId: string;
+    llm: string;
+    voicePreset: string;
+    ttsModel: string;
+    firstMessage: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+export type StartLevel4SessionResponse = {
+    session: Level4Session;
+    conversationToken: string;
+    conversationId: string;
+    dynamicVariables: {
+        memory_bank_summary: string;
+        communication_style: string;
+        safety_posture: string;
+        resolution_bias: string;
+    };
+    memoryBank: string;
+};
+
+export type StartLevel4Session = {
+    title?: string;
+    memoryBank?: string;
+    forceSyncAgent?: boolean;
+};
+
 export type ListAgentsData = {
     body?: never;
     path?: never;
@@ -1189,3 +1334,233 @@ export type StartLevel3SessionResponses = {
 };
 
 export type StartLevel3SessionResponse2 = StartLevel3SessionResponses[keyof StartLevel3SessionResponses];
+
+export type ListLevel4SessionsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/level4-agents/sessions';
+};
+
+export type ListLevel4SessionsResponses = {
+    /**
+     * Sessions
+     */
+    200: Array<Level4Session>;
+};
+
+export type ListLevel4SessionsResponse = ListLevel4SessionsResponses[keyof ListLevel4SessionsResponses];
+
+export type DeleteLevel4SessionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/level4-agents/sessions/{id}';
+};
+
+export type DeleteLevel4SessionErrors = {
+    /**
+     * Not found
+     */
+    404: Level4Error;
+};
+
+export type DeleteLevel4SessionError = DeleteLevel4SessionErrors[keyof DeleteLevel4SessionErrors];
+
+export type DeleteLevel4SessionResponses = {
+    /**
+     * Deleted
+     */
+    204: void;
+};
+
+export type DeleteLevel4SessionResponse = DeleteLevel4SessionResponses[keyof DeleteLevel4SessionResponses];
+
+export type GetLevel4SessionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/level4-agents/sessions/{id}';
+};
+
+export type GetLevel4SessionErrors = {
+    /**
+     * Not found
+     */
+    404: Level4Error;
+};
+
+export type GetLevel4SessionError = GetLevel4SessionErrors[keyof GetLevel4SessionErrors];
+
+export type GetLevel4SessionResponses = {
+    /**
+     * Session
+     */
+    200: Level4Session;
+};
+
+export type GetLevel4SessionResponse = GetLevel4SessionResponses[keyof GetLevel4SessionResponses];
+
+export type UpdateLevel4SessionData = {
+    body: UpdateLevel4Session;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/level4-agents/sessions/{id}';
+};
+
+export type UpdateLevel4SessionErrors = {
+    /**
+     * Not found
+     */
+    404: Level4Error;
+    /**
+     * Update failed
+     */
+    500: Level4Error;
+};
+
+export type UpdateLevel4SessionError = UpdateLevel4SessionErrors[keyof UpdateLevel4SessionErrors];
+
+export type UpdateLevel4SessionResponses = {
+    /**
+     * Session updated
+     */
+    200: Level4Session;
+};
+
+export type UpdateLevel4SessionResponse = UpdateLevel4SessionResponses[keyof UpdateLevel4SessionResponses];
+
+export type Level4WebSearchData = {
+    body: Level4WebSearchRequest;
+    path?: never;
+    query?: never;
+    url: '/level4-agents/tools/web-search';
+};
+
+export type Level4WebSearchErrors = {
+    /**
+     * Search failed
+     */
+    500: Level4Error;
+};
+
+export type Level4WebSearchError = Level4WebSearchErrors[keyof Level4WebSearchErrors];
+
+export type Level4WebSearchResponses = {
+    /**
+     * Search results
+     */
+    200: Level4WebSearchResponse;
+};
+
+export type Level4WebSearchResponse2 = Level4WebSearchResponses[keyof Level4WebSearchResponses];
+
+export type MockLevel4PharmacyRequestData = {
+    body: {
+        pharmacy: 'walgreens' | 'cvs' | 'other';
+        requestType: 'refill_status' | 'pickup_ready_check' | 'transfer_request' | 'general_question';
+        medicationName?: string;
+        details?: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/level4-agents/mocks/pharmacy';
+};
+
+export type MockLevel4PharmacyRequestResponses = {
+    /**
+     * Mock pharmacy response
+     */
+    200: {
+        confirmationId: string;
+        status: string;
+        message: string;
+    };
+};
+
+export type MockLevel4PharmacyRequestResponse = MockLevel4PharmacyRequestResponses[keyof MockLevel4PharmacyRequestResponses];
+
+export type MockLevel4ScheduleFollowUpData = {
+    body: {
+        reason: string;
+        urgency: 'routine' | 'soon' | 'urgent';
+        preferredWindow?: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/level4-agents/mocks/schedule';
+};
+
+export type MockLevel4ScheduleFollowUpResponses = {
+    /**
+     * Mock schedule response
+     */
+    200: {
+        confirmationId: string;
+        slot: string;
+        message: string;
+    };
+};
+
+export type MockLevel4ScheduleFollowUpResponse = MockLevel4ScheduleFollowUpResponses[keyof MockLevel4ScheduleFollowUpResponses];
+
+export type GetLevel4AgentData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Force sync remote ElevenLabs agent config
+         */
+        forceSync?: 'true' | 'false';
+    };
+    url: '/level4-agents/agent';
+};
+
+export type GetLevel4AgentErrors = {
+    /**
+     * Failed
+     */
+    500: Level4Error;
+};
+
+export type GetLevel4AgentError = GetLevel4AgentErrors[keyof GetLevel4AgentErrors];
+
+export type GetLevel4AgentResponses = {
+    /**
+     * Level 4 agent
+     */
+    200: Level4Agent;
+};
+
+export type GetLevel4AgentResponse = GetLevel4AgentResponses[keyof GetLevel4AgentResponses];
+
+export type StartLevel4SessionData = {
+    body?: StartLevel4Session;
+    path?: never;
+    query?: never;
+    url: '/level4-agents/sessions/start';
+};
+
+export type StartLevel4SessionErrors = {
+    /**
+     * Start failed
+     */
+    500: Level4Error;
+};
+
+export type StartLevel4SessionError = StartLevel4SessionErrors[keyof StartLevel4SessionErrors];
+
+export type StartLevel4SessionResponses = {
+    /**
+     * Session started
+     */
+    201: StartLevel4SessionResponse;
+};
+
+export type StartLevel4SessionResponse2 = StartLevel4SessionResponses[keyof StartLevel4SessionResponses];
