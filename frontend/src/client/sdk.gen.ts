@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { ComposeLevel3DefaultsData, ComposeLevel3DefaultsResponses, CreateAgentData, CreateAgentResponses, CreateLevel3AgentData, CreateLevel3AgentErrors, CreateLevel3AgentResponses, CreateSpeechClientSecretData, CreateSpeechClientSecretErrors, CreateSpeechClientSecretResponses, CreateSpeechSessionData, CreateSpeechSessionResponses, DeleteAgentData, DeleteAgentErrors, DeleteAgentResponses, DeleteConciergeDoctorSessionData, DeleteConciergeDoctorSessionErrors, DeleteConciergeDoctorSessionResponses, DeleteLevel3AgentData, DeleteLevel3AgentErrors, DeleteLevel3AgentResponses, DeleteLevel3SessionData, DeleteLevel3SessionErrors, DeleteLevel3SessionResponses, DeleteLevel4SessionData, DeleteLevel4SessionErrors, DeleteLevel4SessionResponses, DeleteSpeechSessionData, DeleteSpeechSessionErrors, DeleteSpeechSessionResponses, EnsureConciergeDoctorAgentData, EnsureConciergeDoctorAgentErrors, EnsureConciergeDoctorAgentResponses, GetAgentData, GetAgentErrors, GetAgentResponses, GetConciergeDoctorSessionData, GetConciergeDoctorSessionErrors, GetConciergeDoctorSessionResponses, GetLevel3AgentData, GetLevel3AgentErrors, GetLevel3AgentResponses, GetLevel3SessionData, GetLevel3SessionErrors, GetLevel3SessionResponses, GetLevel4AgentData, GetLevel4AgentErrors, GetLevel4AgentResponses, GetLevel4SessionData, GetLevel4SessionErrors, GetLevel4SessionResponses, GetSpeechSessionData, GetSpeechSessionErrors, GetSpeechSessionResponses, Level4WebSearchData, Level4WebSearchErrors, Level4WebSearchResponses, ListAgentsData, ListAgentsResponses, ListConciergeDoctorSessionsData, ListConciergeDoctorSessionsResponses, ListLevel3AgentsData, ListLevel3AgentsResponses, ListLevel3SessionsData, ListLevel3SessionsResponses, ListLevel4SessionsData, ListLevel4SessionsResponses, ListSpeechSessionsData, ListSpeechSessionsResponses, MockConciergePharmacyRequestData, MockConciergePharmacyRequestResponses, MockConciergeScheduleFollowUpData, MockConciergeScheduleFollowUpResponses, MockLevel3PharmacyRequestData, MockLevel3PharmacyRequestResponses, MockLevel3ScheduleFollowUpData, MockLevel3ScheduleFollowUpResponses, MockLevel4PharmacyRequestData, MockLevel4PharmacyRequestResponses, MockLevel4ScheduleFollowUpData, MockLevel4ScheduleFollowUpResponses, StartConciergeDoctorSessionData, StartConciergeDoctorSessionErrors, StartConciergeDoctorSessionResponses, StartLevel3SessionData, StartLevel3SessionErrors, StartLevel3SessionResponses, StartLevel4SessionData, StartLevel4SessionErrors, StartLevel4SessionResponses, UpdateAgentData, UpdateAgentErrors, UpdateAgentResponses, UpdateConciergeDoctorSessionData, UpdateConciergeDoctorSessionErrors, UpdateConciergeDoctorSessionResponses, UpdateLevel3AgentData, UpdateLevel3AgentErrors, UpdateLevel3AgentResponses, UpdateLevel3SessionData, UpdateLevel3SessionErrors, UpdateLevel3SessionResponses, UpdateLevel4SessionData, UpdateLevel4SessionErrors, UpdateLevel4SessionResponses, UpdateSpeechSessionData, UpdateSpeechSessionErrors, UpdateSpeechSessionResponses } from './types.gen';
+import type { ComposeLevel3DefaultsData, ComposeLevel3DefaultsResponses, ComposeLevel4DefaultsData, ComposeLevel4DefaultsResponses, CreateAgentData, CreateAgentResponses, CreateLevel3AgentData, CreateLevel3AgentErrors, CreateLevel3AgentResponses, CreateLevel4AgentData, CreateLevel4AgentErrors, CreateLevel4AgentResponses, CreateSpeechClientSecretData, CreateSpeechClientSecretErrors, CreateSpeechClientSecretResponses, CreateSpeechSessionData, CreateSpeechSessionResponses, DeleteAgentData, DeleteAgentErrors, DeleteAgentResponses, DeleteConciergeDoctorSessionData, DeleteConciergeDoctorSessionErrors, DeleteConciergeDoctorSessionResponses, DeleteLevel3AgentData, DeleteLevel3AgentErrors, DeleteLevel3AgentResponses, DeleteLevel3SessionData, DeleteLevel3SessionErrors, DeleteLevel3SessionResponses, DeleteLevel4AgentData, DeleteLevel4AgentErrors, DeleteLevel4AgentResponses, DeleteLevel4SessionData, DeleteLevel4SessionErrors, DeleteLevel4SessionResponses, DeleteSpeechSessionData, DeleteSpeechSessionErrors, DeleteSpeechSessionResponses, EnsureConciergeDoctorAgentData, EnsureConciergeDoctorAgentErrors, EnsureConciergeDoctorAgentResponses, GetAgentData, GetAgentErrors, GetAgentResponses, GetConciergeDoctorSessionData, GetConciergeDoctorSessionErrors, GetConciergeDoctorSessionResponses, GetLevel3AgentData, GetLevel3AgentErrors, GetLevel3AgentResponses, GetLevel3SessionData, GetLevel3SessionErrors, GetLevel3SessionResponses, GetLevel4AgentData, GetLevel4AgentErrors, GetLevel4AgentResponses, GetLevel4SessionData, GetLevel4SessionErrors, GetLevel4SessionResponses, GetSpeechSessionData, GetSpeechSessionErrors, GetSpeechSessionResponses, Level4WebSearchData, Level4WebSearchErrors, Level4WebSearchResponses, ListAgentsData, ListAgentsResponses, ListConciergeDoctorSessionsData, ListConciergeDoctorSessionsResponses, ListLevel3AgentsData, ListLevel3AgentsResponses, ListLevel3SessionsData, ListLevel3SessionsResponses, ListLevel4AgentsData, ListLevel4AgentsResponses, ListLevel4SessionsData, ListLevel4SessionsResponses, ListSpeechSessionsData, ListSpeechSessionsResponses, MockConciergePharmacyRequestData, MockConciergePharmacyRequestResponses, MockConciergeScheduleFollowUpData, MockConciergeScheduleFollowUpResponses, MockLevel3PharmacyRequestData, MockLevel3PharmacyRequestResponses, MockLevel3ScheduleFollowUpData, MockLevel3ScheduleFollowUpResponses, MockLevel4PharmacyRequestData, MockLevel4PharmacyRequestResponses, MockLevel4ScheduleFollowUpData, MockLevel4ScheduleFollowUpResponses, StartConciergeDoctorSessionData, StartConciergeDoctorSessionErrors, StartConciergeDoctorSessionResponses, StartLevel3SessionData, StartLevel3SessionErrors, StartLevel3SessionResponses, StartLevel4SessionData, StartLevel4SessionErrors, StartLevel4SessionResponses, UpdateAgentData, UpdateAgentErrors, UpdateAgentResponses, UpdateConciergeDoctorSessionData, UpdateConciergeDoctorSessionErrors, UpdateConciergeDoctorSessionResponses, UpdateLevel3AgentData, UpdateLevel3AgentErrors, UpdateLevel3AgentResponses, UpdateLevel3SessionData, UpdateLevel3SessionErrors, UpdateLevel3SessionResponses, UpdateLevel4AgentData, UpdateLevel4AgentErrors, UpdateLevel4AgentResponses, UpdateLevel4SessionData, UpdateLevel4SessionErrors, UpdateLevel4SessionResponses, UpdateSpeechSessionData, UpdateSpeechSessionErrors, UpdateSpeechSessionResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -361,18 +361,64 @@ export const mockLevel4ScheduleFollowUp = <ThrowOnError extends boolean = false>
 });
 
 /**
- * Get the frozen Daphne v2 Level 4 agent (creates/syncs if needed)
+ * Compose free-text defaults from typed Level 4 dials (includes L4 appendix)
  */
-export const getLevel4Agent = <ThrowOnError extends boolean = false>(options?: Options<GetLevel4AgentData, ThrowOnError>): RequestResult<GetLevel4AgentResponses, GetLevel4AgentErrors, ThrowOnError> => (options?.client ?? client).get<GetLevel4AgentResponses, GetLevel4AgentErrors, ThrowOnError>({ url: '/level4-agents/agent', ...options });
-
-/**
- * Start a Level 4 conversation with an optional memory bank
- */
-export const startLevel4Session = <ThrowOnError extends boolean = false>(options?: Options<StartLevel4SessionData, ThrowOnError>): RequestResult<StartLevel4SessionResponses, StartLevel4SessionErrors, ThrowOnError> => (options?.client ?? client).post<StartLevel4SessionResponses, StartLevel4SessionErrors, ThrowOnError>({
-    url: '/level4-agents/sessions/start',
+export const composeLevel4Defaults = <ThrowOnError extends boolean = false>(options: Options<ComposeLevel4DefaultsData, ThrowOnError>): RequestResult<ComposeLevel4DefaultsResponses, unknown, ThrowOnError> => (options.client ?? client).post<ComposeLevel4DefaultsResponses, unknown, ThrowOnError>({
+    url: '/level4-agents/compose-defaults',
     ...options,
     headers: {
         'Content-Type': 'application/json',
-        ...options?.headers
+        ...options.headers
+    }
+});
+
+/**
+ * List Level 4 agents
+ */
+export const listLevel4Agents = <ThrowOnError extends boolean = false>(options?: Options<ListLevel4AgentsData, ThrowOnError>): RequestResult<ListLevel4AgentsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListLevel4AgentsResponses, unknown, ThrowOnError>({ url: '/level4-agents', ...options });
+
+/**
+ * Create a Level 4 agent from typed settings
+ */
+export const createLevel4Agent = <ThrowOnError extends boolean = false>(options: Options<CreateLevel4AgentData, ThrowOnError>): RequestResult<CreateLevel4AgentResponses, CreateLevel4AgentErrors, ThrowOnError> => (options.client ?? client).post<CreateLevel4AgentResponses, CreateLevel4AgentErrors, ThrowOnError>({
+    url: '/level4-agents',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete a Level 4 agent
+ */
+export const deleteLevel4Agent = <ThrowOnError extends boolean = false>(options: Options<DeleteLevel4AgentData, ThrowOnError>): RequestResult<DeleteLevel4AgentResponses, DeleteLevel4AgentErrors, ThrowOnError> => (options.client ?? client).delete<DeleteLevel4AgentResponses, DeleteLevel4AgentErrors, ThrowOnError>({ url: '/level4-agents/{id}', ...options });
+
+/**
+ * Get a Level 4 agent
+ */
+export const getLevel4Agent = <ThrowOnError extends boolean = false>(options: Options<GetLevel4AgentData, ThrowOnError>): RequestResult<GetLevel4AgentResponses, GetLevel4AgentErrors, ThrowOnError> => (options.client ?? client).get<GetLevel4AgentResponses, GetLevel4AgentErrors, ThrowOnError>({ url: '/level4-agents/{id}', ...options });
+
+/**
+ * Update a Level 4 agent and sync ElevenLabs
+ */
+export const updateLevel4Agent = <ThrowOnError extends boolean = false>(options: Options<UpdateLevel4AgentData, ThrowOnError>): RequestResult<UpdateLevel4AgentResponses, UpdateLevel4AgentErrors, ThrowOnError> => (options.client ?? client).patch<UpdateLevel4AgentResponses, UpdateLevel4AgentErrors, ThrowOnError>({
+    url: '/level4-agents/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Start a conversation with a Level 4 agent and optional memory bank
+ */
+export const startLevel4Session = <ThrowOnError extends boolean = false>(options: Options<StartLevel4SessionData, ThrowOnError>): RequestResult<StartLevel4SessionResponses, StartLevel4SessionErrors, ThrowOnError> => (options.client ?? client).post<StartLevel4SessionResponses, StartLevel4SessionErrors, ThrowOnError>({
+    url: '/level4-agents/{id}/sessions/start',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
     }
 });

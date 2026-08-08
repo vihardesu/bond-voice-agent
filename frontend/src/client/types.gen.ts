@@ -529,17 +529,104 @@ export type Level4WebSearchRequest = {
     query: string;
 };
 
+export type ComposeLevel4DefaultsResponse = {
+    displayName: string;
+    systemPrompt: string;
+    firstMessage: string;
+    asrKeywords: Array<string>;
+    interruptionIgnoreTerms: Array<string>;
+};
+
+export type Level4AgentSettings = {
+    variantLabel?: 'alpha' | 'beta' | 'pilot' | 'staging' | 'production' | 'experiment_a' | 'experiment_b';
+    communicationStyle?: 'patient' | 'balanced' | 'direct';
+    explanationLevel?: 'minimal' | 'concise' | 'balanced' | 'detailed' | 'thorough';
+    safetyPosture?: 'conservative' | 'balanced' | 'assertive';
+    resolutionBias?: 'fewest_steps' | 'thorough_intake';
+    turnEagerness?: 'patient' | 'normal' | 'eager';
+    voicePreset?: 'sarah' | 'jessica' | 'george' | 'brian' | 'laura';
+    ttsModel?: 'eleven_flash_v2' | 'eleven_turbo_v2';
+    llm?: 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gpt-4o-mini' | 'gpt-4.1-mini' | 'claude-haiku-4-5' | 'gemini-2.0-flash-lite' | 'gemini-3.1-flash-lite' | 'gemini-3.5-flash-lite' | 'qwen3-30b-a3b' | 'qwen36-35b-a3b' | 'gpt-oss-120b' | 'glm-45-air-fp8';
+    interruptionMode?: 'allow' | 'ignore_backchannels' | 'protect_tools';
+    personaPreset?: 'mira' | 'alex' | 'jordan' | 'sam';
+    promptProfile?: 'warm_empathetic' | 'efficient_triage' | 'calm_navigator';
+    enabledTools?: Array<'update_clinical_context' | 'schedule_follow_up' | 'submit_pharmacy_request' | 'confirm_next_step' | 'request_human_handoff' | 'flag_watch_event'>;
+    displayName?: string;
+    systemPrompt?: string;
+    firstMessage?: string;
+    asrKeywords?: Array<string>;
+    interruptionIgnoreTerms?: Array<string>;
+    extraGuardrailPrompt?: string;
+};
+
 export type Level4Agent = {
     id: number;
-    key: string;
     displayName: string;
     elevenLabsAgentId: string;
-    llm: string;
-    voicePreset: string;
-    ttsModel: string;
+    variantLabel: 'alpha' | 'beta' | 'pilot' | 'staging' | 'production' | 'experiment_a' | 'experiment_b';
+    communicationStyle: 'patient' | 'balanced' | 'direct';
+    explanationLevel: 'minimal' | 'concise' | 'balanced' | 'detailed' | 'thorough';
+    safetyPosture: 'conservative' | 'balanced' | 'assertive';
+    resolutionBias: 'fewest_steps' | 'thorough_intake';
+    turnEagerness: 'patient' | 'normal' | 'eager';
+    voicePreset: 'sarah' | 'jessica' | 'george' | 'brian' | 'laura';
+    ttsModel: 'eleven_flash_v2' | 'eleven_turbo_v2';
+    llm: 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gpt-4o-mini' | 'gpt-4.1-mini' | 'claude-haiku-4-5' | 'gemini-2.0-flash-lite' | 'gemini-3.1-flash-lite' | 'gemini-3.5-flash-lite' | 'qwen3-30b-a3b' | 'qwen36-35b-a3b' | 'gpt-oss-120b' | 'glm-45-air-fp8';
+    interruptionMode: 'allow' | 'ignore_backchannels' | 'protect_tools';
+    personaPreset: 'mira' | 'alex' | 'jordan' | 'sam';
+    promptProfile: 'warm_empathetic' | 'efficient_triage' | 'calm_navigator';
+    enabledTools: Array<'update_clinical_context' | 'schedule_follow_up' | 'submit_pharmacy_request' | 'confirm_next_step' | 'request_human_handoff' | 'flag_watch_event'>;
+    systemPrompt: string;
     firstMessage: string;
+    asrKeywords: Array<string>;
+    interruptionIgnoreTerms: Array<string>;
+    extraGuardrailPrompt: string;
     createdAt: string;
     updatedAt: string;
+};
+
+export type CreateLevel4Agent = {
+    variantLabel?: 'alpha' | 'beta' | 'pilot' | 'staging' | 'production' | 'experiment_a' | 'experiment_b';
+    communicationStyle?: 'patient' | 'balanced' | 'direct';
+    explanationLevel?: 'minimal' | 'concise' | 'balanced' | 'detailed' | 'thorough';
+    safetyPosture?: 'conservative' | 'balanced' | 'assertive';
+    resolutionBias?: 'fewest_steps' | 'thorough_intake';
+    turnEagerness?: 'patient' | 'normal' | 'eager';
+    voicePreset?: 'sarah' | 'jessica' | 'george' | 'brian' | 'laura';
+    ttsModel?: 'eleven_flash_v2' | 'eleven_turbo_v2';
+    llm?: 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gpt-4o-mini' | 'gpt-4.1-mini' | 'claude-haiku-4-5' | 'gemini-2.0-flash-lite' | 'gemini-3.1-flash-lite' | 'gemini-3.5-flash-lite' | 'qwen3-30b-a3b' | 'qwen36-35b-a3b' | 'gpt-oss-120b' | 'glm-45-air-fp8';
+    interruptionMode?: 'allow' | 'ignore_backchannels' | 'protect_tools';
+    personaPreset?: 'mira' | 'alex' | 'jordan' | 'sam';
+    promptProfile?: 'warm_empathetic' | 'efficient_triage' | 'calm_navigator';
+    enabledTools?: Array<'update_clinical_context' | 'schedule_follow_up' | 'submit_pharmacy_request' | 'confirm_next_step' | 'request_human_handoff' | 'flag_watch_event'>;
+    displayName?: string;
+    systemPrompt?: string;
+    firstMessage?: string;
+    asrKeywords?: Array<string>;
+    interruptionIgnoreTerms?: Array<string>;
+    extraGuardrailPrompt?: string;
+};
+
+export type UpdateLevel4Agent = {
+    variantLabel?: 'alpha' | 'beta' | 'pilot' | 'staging' | 'production' | 'experiment_a' | 'experiment_b';
+    communicationStyle?: 'patient' | 'balanced' | 'direct';
+    explanationLevel?: 'minimal' | 'concise' | 'balanced' | 'detailed' | 'thorough';
+    safetyPosture?: 'conservative' | 'balanced' | 'assertive';
+    resolutionBias?: 'fewest_steps' | 'thorough_intake';
+    turnEagerness?: 'patient' | 'normal' | 'eager';
+    voicePreset?: 'sarah' | 'jessica' | 'george' | 'brian' | 'laura';
+    ttsModel?: 'eleven_flash_v2' | 'eleven_turbo_v2';
+    llm?: 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gpt-4o-mini' | 'gpt-4.1-mini' | 'claude-haiku-4-5' | 'gemini-2.0-flash-lite' | 'gemini-3.1-flash-lite' | 'gemini-3.5-flash-lite' | 'qwen3-30b-a3b' | 'qwen36-35b-a3b' | 'gpt-oss-120b' | 'glm-45-air-fp8';
+    interruptionMode?: 'allow' | 'ignore_backchannels' | 'protect_tools';
+    personaPreset?: 'mira' | 'alex' | 'jordan' | 'sam';
+    promptProfile?: 'warm_empathetic' | 'efficient_triage' | 'calm_navigator';
+    enabledTools?: Array<'update_clinical_context' | 'schedule_follow_up' | 'submit_pharmacy_request' | 'confirm_next_step' | 'request_human_handoff' | 'flag_watch_event'>;
+    displayName?: string;
+    systemPrompt?: string;
+    firstMessage?: string;
+    asrKeywords?: Array<string>;
+    interruptionIgnoreTerms?: Array<string>;
+    extraGuardrailPrompt?: string;
 };
 
 export type StartLevel4SessionResponse = {
@@ -549,10 +636,12 @@ export type StartLevel4SessionResponse = {
     dynamicVariables: {
         memory_bank_summary: string;
         communication_style: string;
+        explanation_level: string;
         safety_posture: string;
         resolution_bias: string;
     };
     memoryBank: string;
+    enabledTools: Array<'update_clinical_context' | 'schedule_follow_up' | 'submit_pharmacy_request' | 'confirm_next_step' | 'request_human_handoff' | 'flag_watch_event'>;
 };
 
 export type StartLevel4Session = {
@@ -1344,7 +1433,7 @@ export type ListLevel4SessionsData = {
 
 export type ListLevel4SessionsResponses = {
     /**
-     * Sessions
+     * All Level 4 sessions
      */
     200: Array<Level4Session>;
 };
@@ -1398,7 +1487,7 @@ export type GetLevel4SessionError = GetLevel4SessionErrors[keyof GetLevel4Sessio
 
 export type GetLevel4SessionResponses = {
     /**
-     * Session
+     * Session found
      */
     200: Level4Session;
 };
@@ -1510,44 +1599,162 @@ export type MockLevel4ScheduleFollowUpResponses = {
 
 export type MockLevel4ScheduleFollowUpResponse = MockLevel4ScheduleFollowUpResponses[keyof MockLevel4ScheduleFollowUpResponses];
 
-export type GetLevel4AgentData = {
+export type ComposeLevel4DefaultsData = {
+    body: Level4AgentSettings;
+    path?: never;
+    query?: never;
+    url: '/level4-agents/compose-defaults';
+};
+
+export type ComposeLevel4DefaultsResponses = {
+    /**
+     * Composed defaults
+     */
+    200: ComposeLevel4DefaultsResponse;
+};
+
+export type ComposeLevel4DefaultsResponse2 = ComposeLevel4DefaultsResponses[keyof ComposeLevel4DefaultsResponses];
+
+export type ListLevel4AgentsData = {
     body?: never;
     path?: never;
-    query?: {
-        /**
-         * Force sync remote ElevenLabs agent config
-         */
-        forceSync?: 'true' | 'false';
+    query?: never;
+    url: '/level4-agents';
+};
+
+export type ListLevel4AgentsResponses = {
+    /**
+     * All Level 4 agents
+     */
+    200: Array<Level4Agent>;
+};
+
+export type ListLevel4AgentsResponse = ListLevel4AgentsResponses[keyof ListLevel4AgentsResponses];
+
+export type CreateLevel4AgentData = {
+    body: CreateLevel4Agent;
+    path?: never;
+    query?: never;
+    url: '/level4-agents';
+};
+
+export type CreateLevel4AgentErrors = {
+    /**
+     * Create failed
+     */
+    500: Level4Error;
+};
+
+export type CreateLevel4AgentError = CreateLevel4AgentErrors[keyof CreateLevel4AgentErrors];
+
+export type CreateLevel4AgentResponses = {
+    /**
+     * Agent created
+     */
+    201: Level4Agent;
+};
+
+export type CreateLevel4AgentResponse = CreateLevel4AgentResponses[keyof CreateLevel4AgentResponses];
+
+export type DeleteLevel4AgentData = {
+    body?: never;
+    path: {
+        id: string;
     };
-    url: '/level4-agents/agent';
+    query?: never;
+    url: '/level4-agents/{id}';
+};
+
+export type DeleteLevel4AgentErrors = {
+    /**
+     * Not found
+     */
+    404: Level4Error;
+};
+
+export type DeleteLevel4AgentError = DeleteLevel4AgentErrors[keyof DeleteLevel4AgentErrors];
+
+export type DeleteLevel4AgentResponses = {
+    /**
+     * Deleted
+     */
+    204: void;
+};
+
+export type DeleteLevel4AgentResponse = DeleteLevel4AgentResponses[keyof DeleteLevel4AgentResponses];
+
+export type GetLevel4AgentData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/level4-agents/{id}';
 };
 
 export type GetLevel4AgentErrors = {
     /**
-     * Failed
+     * Not found
      */
-    500: Level4Error;
+    404: Level4Error;
 };
 
 export type GetLevel4AgentError = GetLevel4AgentErrors[keyof GetLevel4AgentErrors];
 
 export type GetLevel4AgentResponses = {
     /**
-     * Level 4 agent
+     * Agent found
      */
     200: Level4Agent;
 };
 
 export type GetLevel4AgentResponse = GetLevel4AgentResponses[keyof GetLevel4AgentResponses];
 
+export type UpdateLevel4AgentData = {
+    body: UpdateLevel4Agent;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/level4-agents/{id}';
+};
+
+export type UpdateLevel4AgentErrors = {
+    /**
+     * Not found
+     */
+    404: Level4Error;
+    /**
+     * Update failed
+     */
+    500: Level4Error;
+};
+
+export type UpdateLevel4AgentError = UpdateLevel4AgentErrors[keyof UpdateLevel4AgentErrors];
+
+export type UpdateLevel4AgentResponses = {
+    /**
+     * Agent updated
+     */
+    200: Level4Agent;
+};
+
+export type UpdateLevel4AgentResponse = UpdateLevel4AgentResponses[keyof UpdateLevel4AgentResponses];
+
 export type StartLevel4SessionData = {
     body?: StartLevel4Session;
-    path?: never;
+    path: {
+        id: string;
+    };
     query?: never;
-    url: '/level4-agents/sessions/start';
+    url: '/level4-agents/{id}/sessions/start';
 };
 
 export type StartLevel4SessionErrors = {
+    /**
+     * Agent not found
+     */
+    404: Level4Error;
     /**
      * Start failed
      */

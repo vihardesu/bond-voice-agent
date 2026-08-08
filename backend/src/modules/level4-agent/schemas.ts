@@ -1,5 +1,113 @@
 import { z } from "@hono/zod-openapi";
 
+import {
+  COMMUNICATION_STYLES,
+  EXPLANATION_LEVELS,
+  INTERRUPTION_MODES,
+  LLM_OPTIONS,
+  PERSONA_PRESETS,
+  PROMPT_PROFILES,
+  RESOLUTION_BIASES,
+  SAFETY_POSTURES,
+  TOOL_OPTIONS,
+  TTS_MODELS,
+  TURN_EAGERNESS_OPTIONS,
+  VARIANT_LABELS,
+  VOICE_PRESETS,
+} from "./settings.js";
+
+export const CommunicationStyleSchema = z.enum(COMMUNICATION_STYLES);
+export const ExplanationLevelSchema = z.enum(EXPLANATION_LEVELS);
+export const SafetyPostureSchema = z.enum(SAFETY_POSTURES);
+export const ResolutionBiasSchema = z.enum(RESOLUTION_BIASES);
+export const TurnEagernessSchema = z.enum(TURN_EAGERNESS_OPTIONS);
+export const VoicePresetSchema = z.enum(VOICE_PRESETS);
+export const TtsModelSchema = z.enum(TTS_MODELS);
+export const LlmOptionSchema = z.enum(LLM_OPTIONS);
+export const InterruptionModeSchema = z.enum(INTERRUPTION_MODES);
+export const PersonaPresetSchema = z.enum(PERSONA_PRESETS);
+export const PromptProfileSchema = z.enum(PROMPT_PROFILES);
+export const ToolOptionSchema = z.enum(TOOL_OPTIONS);
+export const VariantLabelSchema = z.enum(VARIANT_LABELS);
+
+const StringListSchema = z
+  .array(z.string().trim().min(1).max(64))
+  .max(50)
+  .default([]);
+
+export const Level4AgentSettingsSchema = z
+  .object({
+    variantLabel: VariantLabelSchema.default("alpha"),
+    communicationStyle: CommunicationStyleSchema.default("direct"),
+    explanationLevel: ExplanationLevelSchema.default("minimal"),
+    safetyPosture: SafetyPostureSchema.default("balanced"),
+    resolutionBias: ResolutionBiasSchema.default("fewest_steps"),
+    turnEagerness: TurnEagernessSchema.default("normal"),
+    voicePreset: VoicePresetSchema.default("sarah"),
+    ttsModel: TtsModelSchema.default("eleven_flash_v2"),
+    llm: LlmOptionSchema.default("qwen36-35b-a3b"),
+    interruptionMode: InterruptionModeSchema.default("protect_tools"),
+    personaPreset: PersonaPresetSchema.default("sam"),
+    promptProfile: PromptProfileSchema.default("warm_empathetic"),
+    enabledTools: z
+      .array(ToolOptionSchema)
+      .min(1)
+      .default([...TOOL_OPTIONS]),
+    displayName: z.string().max(120).optional().default(""),
+    systemPrompt: z.string().max(20000).optional().default(""),
+    firstMessage: z.string().max(1000).optional().default(""),
+    asrKeywords: StringListSchema,
+    interruptionIgnoreTerms: StringListSchema,
+    extraGuardrailPrompt: z.string().max(2000).optional().default(""),
+  })
+  .openapi("Level4AgentSettings");
+
+export const CreateLevel4AgentSchema = Level4AgentSettingsSchema.openapi(
+  "CreateLevel4Agent",
+);
+
+export const UpdateLevel4AgentSchema = Level4AgentSettingsSchema.partial().openapi(
+  "UpdateLevel4Agent",
+);
+
+export const Level4AgentSchema = z
+  .object({
+    id: z.number().int(),
+    displayName: z.string(),
+    elevenLabsAgentId: z.string(),
+    variantLabel: VariantLabelSchema,
+    communicationStyle: CommunicationStyleSchema,
+    explanationLevel: ExplanationLevelSchema,
+    safetyPosture: SafetyPostureSchema,
+    resolutionBias: ResolutionBiasSchema,
+    turnEagerness: TurnEagernessSchema,
+    voicePreset: VoicePresetSchema,
+    ttsModel: TtsModelSchema,
+    llm: LlmOptionSchema,
+    interruptionMode: InterruptionModeSchema,
+    personaPreset: PersonaPresetSchema,
+    promptProfile: PromptProfileSchema,
+    enabledTools: z.array(ToolOptionSchema),
+    systemPrompt: z.string(),
+    firstMessage: z.string(),
+    asrKeywords: z.array(z.string()),
+    interruptionIgnoreTerms: z.array(z.string()),
+    extraGuardrailPrompt: z.string(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+  })
+  .openapi("Level4Agent");
+
+export const ComposeLevel4DefaultsResponseSchema = z
+  .object({
+    displayName: z.string(),
+    systemPrompt: z.string(),
+    firstMessage: z.string(),
+    asrKeywords: z.array(z.string()),
+    interruptionIgnoreTerms: z.array(z.string()),
+  })
+  .openapi("ComposeLevel4DefaultsResponse");
+
 export const ErrorSchema = z
   .object({
     error: z.string(),
@@ -99,21 +207,6 @@ export const MetricsSchema = z
   .passthrough()
   .openapi("Level4Metrics");
 
-export const Level4AgentSchema = z
-  .object({
-    id: z.number().int(),
-    key: z.string(),
-    displayName: z.string(),
-    elevenLabsAgentId: z.string(),
-    llm: z.string(),
-    voicePreset: z.string(),
-    ttsModel: z.string(),
-    firstMessage: z.string(),
-    createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime(),
-  })
-  .openapi("Level4Agent");
-
 export const Level4SessionSchema = z
   .object({
     id: z.number().int(),
@@ -153,10 +246,12 @@ export const StartLevel4SessionResponseSchema = z
     dynamicVariables: z.object({
       memory_bank_summary: z.string(),
       communication_style: z.string(),
+      explanation_level: z.string(),
       safety_posture: z.string(),
       resolution_bias: z.string(),
     }),
     memoryBank: z.string(),
+    enabledTools: z.array(ToolOptionSchema),
   })
   .openapi("StartLevel4SessionResponse");
 

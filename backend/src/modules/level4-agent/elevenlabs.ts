@@ -1,15 +1,19 @@
 import { ElevenLabsClient, type ElevenLabs } from "@elevenlabs/elevenlabs-js";
 
+import { summarizeMemoryBank } from "./daphne-v2.js";
 import {
-  buildLevel4SystemPrompt,
-  DAPHNE_V2_DISPLAY_NAME,
-  DAPHNE_V2_FIRST_MESSAGE,
-  DAPHNE_V2_SETTINGS,
-  summarizeMemoryBank,
-} from "./daphne-v2.js";
+  buildLevel4AgentRemoteName,
+  resolveAsrKeywords,
+  resolveFirstMessage,
+  resolveInterruptionIgnoreTerms,
+  resolveLevel4SystemPrompt,
+} from "./prompt.js";
+import {
+  explanationLevelNumber,
+  VOICE_PRESET_IDS,
+  type Level4AgentSettings,
+} from "./settings.js";
 import { buildLevel4ClientTools, buildLevel4ExaWebSearchTool } from "./tools.js";
-
-const VOICE_ID = "EXAVITQu4vr4xnSDxMaL"; // sarah / Daphne
 
 function getApiKey(): string {
   const apiKey = process.env.ELEVENLABS_API_KEY?.trim();
@@ -91,28 +95,33 @@ function endCallTool(): ElevenLabs.SystemToolConfigInput {
   };
 }
 
-function agentConversationConfig(): ElevenLabs.ConversationalConfig {
+function agentConversationConfig(
+  settings: Level4AgentSettings,
+): ElevenLabs.ConversationalConfig {
   const tools = [
-    ...buildLevel4ClientTools(),
+    ...buildLevel4ClientTools(settings.enabledTools),
     buildLevel4ExaWebSearchTool(getExaApiKey()),
   ];
 
   return {
     agent: {
-      firstMessage: DAPHNE_V2_FIRST_MESSAGE,
+      firstMessage: resolveFirstMessage(settings),
       language: "en",
-      disableFirstMessageInterruptions: true,
+      disableFirstMessageInterruptions: settings.interruptionMode !== "allow",
       dynamicVariables: {
         dynamicVariablePlaceholders: {
           memory_bank_summary: "empty",
-          communication_style: DAPHNE_V2_SETTINGS.communicationStyle,
-          safety_posture: DAPHNE_V2_SETTINGS.safetyPosture,
-          resolution_bias: DAPHNE_V2_SETTINGS.resolutionBias,
+          communication_style: settings.communicationStyle,
+          explanation_level: String(
+            explanationLevelNumber(settings.explanationLevel),
+          ),
+          safety_posture: settings.safetyPosture,
+          resolution_bias: settings.resolutionBias,
         },
       },
       prompt: {
-        prompt: buildLevel4SystemPrompt(),
-        llm: DAPHNE_V2_SETTINGS.llm,
+        prompt: resolveLevel4SystemPrompt(settings),
+        llm: settings.llm,
         temperature: 0.4,
         tools,
         builtInTools: {
@@ -121,8 +130,8 @@ function agentConversationConfig(): ElevenLabs.ConversationalConfig {
       },
     },
     tts: {
-      voiceId: VOICE_ID,
-      modelId: DAPHNE_V2_SETTINGS.ttsModel,
+      voiceId: VOICE_PRESET_IDS[settings.voicePreset],
+      modelId: settings.ttsModel,
       stability: 0.45,
       similarityBoost: 0.8,
       speed: 1.0,
@@ -131,13 +140,13 @@ function agentConversationConfig(): ElevenLabs.ConversationalConfig {
     asr: {
       quality: "high",
       provider: "scribe_realtime",
-      keywords: [...DAPHNE_V2_SETTINGS.asrKeywords],
+      keywords: resolveAsrKeywords(settings),
     },
     turn: {
       turnTimeout: 7,
-      turnEagerness: DAPHNE_V2_SETTINGS.turnEagerness,
+      turnEagerness: settings.turnEagerness,
       turnModel: "turn_v3",
-      interruptionIgnoreTerms: [...DAPHNE_V2_SETTINGS.interruptionIgnoreTerms],
+      interruptionIgnoreTerms: resolveInterruptionIgnoreTerms(settings),
     },
     conversation: {
       maxDurationSeconds: 900,
@@ -158,7 +167,43 @@ function agentConversationConfig(): ElevenLabs.ConversationalConfig {
   };
 }
 
-function agentPlatformSettings(): ElevenLabs.AgentPlatformSettingsRequestModel {
+function agentPlatformSettings(
+  settings: Level4AgentSettings,
+): ElevenLabs.AgentPlatformSettingsRequestModel {
+  const customConfigs = [
+    {
+      isEnabled: true,
+      name: "No medical diagnoses or prescribing",
+      prompt:
+        "Block the agent from providing a definitive medical diagnosis, prescribing medication, or changing dosages. Allow empathy, triage-style next steps, mock scheduling/pharmacy requests, memory bank lookups, and web search grounded facts.",
+      executionMode: "blocking" as const,
+      model: "gemini-2.5-flash-lite" as const,
+      historyMessageCount: 2,
+      triggerAction: {
+        type: "retry" as const,
+        feedback:
+          "Reason: {{trigger_reason}}. Do not diagnose or prescribe. Offer a safe next step, ask for missing info, consult memory/web tools, or hand off.",
+      },
+    },
+    ...(settings.extraGuardrailPrompt.trim()
+      ? [
+          {
+            isEnabled: true,
+            name: "Level 4 custom guardrail",
+            prompt: settings.extraGuardrailPrompt.trim(),
+            executionMode: "blocking" as const,
+            model: "gemini-2.5-flash-lite" as const,
+            historyMessageCount: 2,
+            triggerAction: {
+              type: "retry" as const,
+              feedback:
+                "Reason: {{trigger_reason}}. Follow the custom Level 4 guardrail and continue safely.",
+            },
+          },
+        ]
+      : []),
+  ];
+
   return {
     auth: {
       enableAuth: true,
@@ -187,42 +232,25 @@ function agentPlatformSettings(): ElevenLabs.AgentPlatformSettingsRequestModel {
       },
       custom: {
         config: {
-          configs: [
-            {
-              isEnabled: true,
-              name: "No medical diagnoses or prescribing",
-              prompt:
-                "Block the agent from providing a definitive medical diagnosis, prescribing medication, or changing dosages. Allow empathy, triage-style next steps, mock scheduling/pharmacy requests, memory bank lookups, and web search grounded facts.",
-              executionMode: "blocking" as const,
-              model: "gemini-2.5-flash-lite" as const,
-              historyMessageCount: 2,
-              triggerAction: {
-                type: "retry" as const,
-                feedback:
-                  "Reason: {{trigger_reason}}. Do not diagnose or prescribe. Offer a safe next step, ask for missing info, consult memory/web tools, or hand off.",
-              },
-            },
-          ],
+          configs: customConfigs,
         },
       },
     },
   };
 }
 
-export function level4RemoteAgentName(): string {
-  return `Bond L4 · ${DAPHNE_V2_DISPLAY_NAME}`;
-}
-
-export async function createRemoteLevel4Agent(): Promise<string> {
+export async function createRemoteLevel4Agent(
+  settings: Level4AgentSettings,
+): Promise<string> {
   const client = getClient();
-  const name = level4RemoteAgentName();
+  const name = buildLevel4AgentRemoteName(settings);
   console.info("[level4-agent] Creating ElevenLabs agent", { name });
 
   const created = await client.conversationalAi.agents.create({
     name,
-    tags: ["bond", "level4-agent", "daphne-v2"],
-    conversationConfig: agentConversationConfig(),
-    platformSettings: agentPlatformSettings(),
+    tags: ["bond", "level4-agent"],
+    conversationConfig: agentConversationConfig(settings),
+    platformSettings: agentPlatformSettings(settings),
   });
 
   if (!created.agentId) {
@@ -235,17 +263,33 @@ export async function createRemoteLevel4Agent(): Promise<string> {
   return created.agentId;
 }
 
-export async function syncRemoteLevel4Agent(agentId: string): Promise<void> {
+export async function syncRemoteLevel4Agent(
+  agentId: string,
+  settings: Level4AgentSettings,
+): Promise<void> {
   const client = getClient();
-  const name = level4RemoteAgentName();
+  const name = buildLevel4AgentRemoteName(settings);
   console.info("[level4-agent] Syncing ElevenLabs agent", { agentId, name });
 
   await client.conversationalAi.agents.update(agentId, {
     name,
-    tags: ["bond", "level4-agent", "daphne-v2"],
-    conversationConfig: agentConversationConfig(),
-    platformSettings: agentPlatformSettings(),
+    tags: ["bond", "level4-agent"],
+    conversationConfig: agentConversationConfig(settings),
+    platformSettings: agentPlatformSettings(settings),
   });
+}
+
+export async function deleteRemoteLevel4Agent(agentId: string): Promise<void> {
+  try {
+    const client = getClient();
+    await client.conversationalAi.agents.delete(agentId);
+    console.info("[level4-agent] Deleted ElevenLabs agent", { agentId });
+  } catch (error) {
+    console.error("[level4-agent] Failed to delete ElevenLabs agent", {
+      agentId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
 }
 
 export async function createConversationCredentials(options: {
@@ -312,6 +356,9 @@ export function extractMetricsFromRemote(
     watchEventCount: number;
     interruptionCount: number;
     avgVadScore: number | null;
+    ttsModel: string;
+    llm: string;
+    voicePreset: string;
   },
 ): Record<string, unknown> {
   const metadata = remote?.metadata;
@@ -339,20 +386,23 @@ export function extractMetricsFromRemote(
     terminationReason: metadata?.terminationReason ?? null,
     remoteStatus: remote?.status ?? null,
     analysisSummary: remote?.analysis?.transcriptSummary ?? null,
-    ttsModel: DAPHNE_V2_SETTINGS.ttsModel,
-    llm: DAPHNE_V2_SETTINGS.llm,
-    voicePreset: DAPHNE_V2_SETTINGS.voicePreset,
+    ttsModel: local.ttsModel,
+    llm: local.llm,
+    voicePreset: local.voicePreset,
     asrProvider: "scribe_realtime",
     turnModel: "turn_v3",
-    memoryBankSummary: summarizeMemoryBank(""),
   };
 }
 
-export function sessionDynamicVariables(memoryBank: string) {
+export function sessionDynamicVariables(
+  settings: Level4AgentSettings,
+  memoryBank: string,
+) {
   return {
     memory_bank_summary: summarizeMemoryBank(memoryBank),
-    communication_style: DAPHNE_V2_SETTINGS.communicationStyle,
-    safety_posture: DAPHNE_V2_SETTINGS.safetyPosture,
-    resolution_bias: DAPHNE_V2_SETTINGS.resolutionBias,
+    communication_style: settings.communicationStyle,
+    explanation_level: String(explanationLevelNumber(settings.explanationLevel)),
+    safety_posture: settings.safetyPosture,
+    resolution_bias: settings.resolutionBias,
   };
 }

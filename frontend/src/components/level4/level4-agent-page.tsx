@@ -22,17 +22,42 @@ import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/mod
 import { Badge } from "@/components/base/badges/badges";
 import { Button } from "@/components/base/buttons/button";
 import {
+  COMMUNICATION_STYLES,
+  DEFAULT_DRAFT_SETTINGS,
+  EXPLANATION_LEVELS,
+  INTERRUPTION_MODES,
+  LABELS,
+  LLM_OPTIONS,
+  listToText,
+  PERSONA_PRESETS,
+  PROMPT_PROFILES,
+  RESOLUTION_BIASES,
+  SAFETY_POSTURES,
+  textToList,
+  TOOL_OPTIONS,
+  TTS_MODELS,
+  TURN_EAGERNESS_OPTIONS,
+  VARIANT_LABELS,
+  VOICE_PRESETS,
+  type Level4DraftSettings,
+} from "@/components/level4/settings-options";
+import {
+  useComposeLevel4Defaults,
+  useCreateLevel4Agent,
+  useDeleteLevel4Agent,
   useDeleteLevel4Session,
-  useLevel4Agent,
+  useLevel4Agents,
   useLevel4Sessions,
   useMockLevel4PharmacyRequest,
   useMockLevel4ScheduleFollowUp,
   useStartLevel4Session,
+  useUpdateLevel4Agent,
   useUpdateLevel4Session,
 } from "@/hooks/use-level4-agent";
 import { cx } from "@/utils/cx";
 
 type ResolutionValue = NonNullable<Level4Resolution>;
+type ToolOption = (typeof TOOL_OPTIONS)[number];
 
 function getErrorMessage(error: unknown): string | null {
   if (!error) return null;
@@ -199,14 +224,102 @@ function queryMemoryBank(memoryBank: string, query: string | undefined) {
     ok: true,
     query: normalizedQuery,
     memoryBank: bank,
-    matches: [bank],
+    matches: [] as string[],
     empty: false,
+    note: "No exact matches; share relevant bank facts if helpful.",
   };
 }
 
+
+function draftFromAgent(agent: Level4Agent): Level4DraftSettings {
+  return {
+    variantLabel: agent.variantLabel,
+    communicationStyle: agent.communicationStyle,
+    explanationLevel: agent.explanationLevel,
+    safetyPosture: agent.safetyPosture,
+    resolutionBias: agent.resolutionBias,
+    turnEagerness: agent.turnEagerness,
+    voicePreset: agent.voicePreset,
+    ttsModel: agent.ttsModel,
+    llm: agent.llm,
+    interruptionMode: agent.interruptionMode,
+    personaPreset: agent.personaPreset,
+    promptProfile: agent.promptProfile,
+    enabledTools: agent.enabledTools,
+    displayName: agent.displayName,
+    systemPrompt: agent.systemPrompt,
+    firstMessage: agent.firstMessage,
+    asrKeywordsText: listToText(agent.asrKeywords),
+    interruptionIgnoreTermsText: listToText(agent.interruptionIgnoreTerms),
+    extraGuardrailPrompt: agent.extraGuardrailPrompt,
+  };
+}
+
+function draftToBody(draft: Level4DraftSettings) {
+  return {
+    variantLabel: draft.variantLabel,
+    communicationStyle: draft.communicationStyle,
+    explanationLevel: draft.explanationLevel,
+    safetyPosture: draft.safetyPosture,
+    resolutionBias: draft.resolutionBias,
+    turnEagerness: draft.turnEagerness,
+    voicePreset: draft.voicePreset,
+    ttsModel: draft.ttsModel,
+    llm: draft.llm,
+    interruptionMode: draft.interruptionMode,
+    personaPreset: draft.personaPreset,
+    promptProfile: draft.promptProfile,
+    enabledTools: draft.enabledTools,
+    displayName: draft.displayName.trim(),
+    systemPrompt: draft.systemPrompt,
+    firstMessage: draft.firstMessage.trim(),
+    asrKeywords: textToList(draft.asrKeywordsText),
+    interruptionIgnoreTerms: textToList(draft.interruptionIgnoreTermsText),
+    extraGuardrailPrompt: draft.extraGuardrailPrompt.trim(),
+  };
+}
+
+function SelectField<T extends string>({
+  label,
+  value,
+  options,
+  labels,
+  disabled,
+  onChange,
+}: {
+  label: string;
+  value: T;
+  options: readonly T[];
+  labels: Record<T, string>;
+  disabled?: boolean;
+  onChange: (value: T) => void;
+}) {
+  return (
+    <label className="flex flex-col gap-2">
+      <span className="text-sm font-semibold text-secondary">{label}</span>
+      <select
+        className="rounded-lg border border-secondary bg-primary px-3 py-2 text-sm text-primary"
+        value={value}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.value as T)}
+      >
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {labels[option]}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 function Level4AgentExperience() {
-  const { data: agent, isLoading: agentLoading } = useLevel4Agent();
-  const { data: sessions, isLoading, isError, error } = useLevel4Sessions();
+  const { data: agents, isLoading: agentsLoading } = useLevel4Agents();
+  const { data: sessions, isLoading: sessionsLoading, isError, error } = useLevel4Sessions();
+  const createAgent = useCreateLevel4Agent();
+  const updateAgent = useUpdateLevel4Agent();
+  const deleteAgent = useDeleteLevel4Agent();
+  const composeDefaults = useComposeLevel4Defaults();
   const startSession = useStartLevel4Session();
   const updateSession = useUpdateLevel4Session();
   const deleteSession = useDeleteLevel4Session();
@@ -216,7 +329,8 @@ function Level4AgentExperience() {
   const { startSession: startConversation, endSession } = useConversationControls();
   const { status } = useConversationStatus();
 
-  const [memoryBank, setMemoryBank] = useState("");
+  const [draft, setDraft] = useState<Level4DraftSettings>(DEFAULT_DRAFT_SETTINGS);
+  const [selectedAgentId, setSelectedAgentId] = useState<number | null>(null);
   const [activeSessionId, setActiveSessionId] = useState<number | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [liveTranscript, setLiveTranscript] = useState<Level4TranscriptEntry[]>([]);
@@ -227,9 +341,12 @@ function Level4AgentExperience() {
   const [selectedSession, setSelectedSession] = useState<Level4Session | null>(null);
   const [localError, setLocalError] = useState<string | null>(null);
   const [mode, setMode] = useState<"speaking" | "listening" | "idle">("idle");
+  const [enabledToolsLive, setEnabledToolsLive] = useState<ToolOption[]>([...TOOL_OPTIONS]);
+  const [memoryBank, setMemoryBank] = useState("");
   const [toolWorking, setToolWorking] = useState(false);
 
   const startedAtRef = useRef<number | null>(null);
+  const memoryBankRef = useRef("");
   const transcriptRef = useRef<Level4TranscriptEntry[]>([]);
   const eventsRef = useRef<Level4ObservabilityEvent[]>([]);
   const clinicalRef = useRef<Level4ClinicalContext>({});
@@ -239,14 +356,9 @@ function Level4AgentExperience() {
   const activeSessionIdRef = useRef<number | null>(null);
   const pendingAppendRef = useRef<Level4ObservabilityEvent[]>([]);
   const isClosingRef = useRef(false);
-  const memoryBankRef = useRef("");
-  const agentRef = useRef<Level4Agent | null>(null);
+  const selectedAgent = agents?.find((agent) => agent.id === selectedAgentId) ?? null;
 
   const isLive = status === "connecting" || status === "connected";
-
-  useEffect(() => {
-    agentRef.current = agent ?? null;
-  }, [agent]);
 
   const pushEvent = (event: Level4ObservabilityEvent) => {
     eventsRef.current = [...eventsRef.current, event];
@@ -275,7 +387,6 @@ function Level4AgentExperience() {
   const recomputeLocalMetrics = () => {
     const latencySamples = latencySamplesRef.current;
     const vadSamples = vadSamplesRef.current;
-    const currentAgent = agentRef.current;
     const next: Level4Metrics = {
       avgLatencyMs:
         latencySamples.length > 0
@@ -299,9 +410,9 @@ function Level4AgentExperience() {
               ).toFixed(3),
             )
           : null,
-      ttsModel: currentAgent?.ttsModel,
-      llm: currentAgent?.llm,
-      voicePreset: currentAgent?.voicePreset,
+      ttsModel: selectedAgent?.ttsModel ?? draft.ttsModel,
+      llm: selectedAgent?.llm ?? draft.llm,
+      voicePreset: selectedAgent?.voicePreset ?? draft.voicePreset,
       asrProvider: "scribe_realtime",
       turnModel: "turn_v3",
     };
@@ -344,6 +455,16 @@ function Level4AgentExperience() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLive]);
 
+  useEffect(() => {
+    if (selectedAgentId != null) return;
+    if (agents?.length) {
+      setSelectedAgentId(agents[0].id);
+      setDraft(draftFromAgent(agents[0]));
+    }
+  }, [agents, selectedAgentId]);
+
+  const toolEnabled = (name: ToolOption) => enabledToolsLive.includes(name);
+
   useConversationClientTool("query_memory_bank", async (params) => {
     setToolWorking(true);
     try {
@@ -371,184 +492,172 @@ function Level4AgentExperience() {
   });
 
   useConversationClientTool("update_clinical_context", async (params) => {
-    setToolWorking(true);
-    try {
-      const next = {
-        ...clinicalRef.current,
-        ...(typeof params.symptom === "string" ? { symptom: params.symptom } : {}),
-        ...(typeof params.duration === "string" ? { duration: params.duration } : {}),
-        ...(typeof params.history === "string" ? { history: params.history } : {}),
-        ...(typeof params.currentMedications === "string"
-          ? { currentMedications: params.currentMedications }
-          : {}),
-        ...(typeof params.unknowns === "string" ? { unknowns: params.unknowns } : {}),
-        ...(typeof params.notes === "string" ? { notes: params.notes } : {}),
-      };
-      clinicalRef.current = next;
-      setClinicalContext(next);
-      pushEvent({
-        at: new Date().toISOString(),
-        type: "tool_response",
-        message: "Updated clinical context",
-        data: next,
-      });
-      return JSON.stringify({ ok: true, clinicalContext: next });
-    } finally {
-      setToolWorking(false);
+    if (!toolEnabled("update_clinical_context")) {
+      return JSON.stringify({ ok: false, error: "Tool disabled for this agent" });
     }
+    const next = {
+      ...clinicalRef.current,
+      ...(typeof params.symptom === "string" ? { symptom: params.symptom } : {}),
+      ...(typeof params.duration === "string" ? { duration: params.duration } : {}),
+      ...(typeof params.history === "string" ? { history: params.history } : {}),
+      ...(typeof params.currentMedications === "string"
+        ? { currentMedications: params.currentMedications }
+        : {}),
+      ...(typeof params.unknowns === "string" ? { unknowns: params.unknowns } : {}),
+      ...(typeof params.notes === "string" ? { notes: params.notes } : {}),
+    };
+    clinicalRef.current = next;
+    setClinicalContext(next);
+    pushEvent({
+      at: new Date().toISOString(),
+      type: "tool_response",
+      message: "Updated clinical context",
+      data: next,
+    });
+    return JSON.stringify({ ok: true, clinicalContext: next });
   });
 
   useConversationClientTool("schedule_follow_up", async (params) => {
-    setToolWorking(true);
-    try {
-      pushEvent({
-        at: new Date().toISOString(),
-        type: "tool_request",
-        message: "schedule_follow_up",
-        data: params,
-      });
-      const result = await mockSchedule.mutateAsync({
-        body: {
-          reason: String(params.reason ?? ""),
-          urgency: (params.urgency as "routine" | "soon" | "urgent") || "soon",
-          preferredWindow:
-            typeof params.preferredWindow === "string" ? params.preferredWindow : undefined,
-        },
-      });
-      const nextResolution: ResolutionValue = {
-        type: "scheduled_follow_up",
-        summary: result.message,
-        confirmationId: result.confirmationId,
-        details: { slot: result.slot },
-      };
-      resolutionRef.current = nextResolution;
-      setResolution(nextResolution);
-      pushEvent({
-        at: new Date().toISOString(),
-        type: "tool_response",
-        message: result.message,
-        data: result,
-      });
-      return JSON.stringify(result);
-    } finally {
-      setToolWorking(false);
+    if (!toolEnabled("schedule_follow_up")) {
+      return JSON.stringify({ ok: false, error: "Tool disabled for this agent" });
     }
+    pushEvent({
+      at: new Date().toISOString(),
+      type: "tool_request",
+      message: "schedule_follow_up",
+      data: params,
+    });
+    const result = await mockSchedule.mutateAsync({
+      body: {
+        reason: String(params.reason ?? ""),
+        urgency: (params.urgency as "routine" | "soon" | "urgent") || "soon",
+        preferredWindow:
+          typeof params.preferredWindow === "string" ? params.preferredWindow : undefined,
+      },
+    });
+    const nextResolution: ResolutionValue = {
+      type: "scheduled_follow_up",
+      summary: result.message,
+      confirmationId: result.confirmationId,
+      details: { slot: result.slot },
+    };
+    resolutionRef.current = nextResolution;
+    setResolution(nextResolution);
+    pushEvent({
+      at: new Date().toISOString(),
+      type: "tool_response",
+      message: result.message,
+      data: result,
+    });
+    return JSON.stringify(result);
   });
 
   useConversationClientTool("submit_pharmacy_request", async (params) => {
-    setToolWorking(true);
-    try {
-      pushEvent({
-        at: new Date().toISOString(),
-        type: "tool_request",
-        message: "submit_pharmacy_request",
-        data: params,
-      });
-      const result = await mockPharmacy.mutateAsync({
-        body: {
-          pharmacy: (params.pharmacy as "walgreens" | "cvs" | "other") || "other",
-          requestType:
-            (params.requestType as
-              | "refill_status"
-              | "pickup_ready_check"
-              | "transfer_request"
-              | "general_question") || "general_question",
-          medicationName:
-            typeof params.medicationName === "string" ? params.medicationName : undefined,
-          details: typeof params.details === "string" ? params.details : undefined,
-        },
-      });
-      const nextResolution: ResolutionValue = {
-        type: "pharmacy_request",
-        summary: result.message,
-        confirmationId: result.confirmationId,
-        pharmacy: String(params.pharmacy ?? "other"),
-      };
-      resolutionRef.current = nextResolution;
-      setResolution(nextResolution);
-      pushEvent({
-        at: new Date().toISOString(),
-        type: "tool_response",
-        message: result.message,
-        data: result,
-      });
-      return JSON.stringify(result);
-    } finally {
-      setToolWorking(false);
+    if (!toolEnabled("submit_pharmacy_request")) {
+      return JSON.stringify({ ok: false, error: "Tool disabled for this agent" });
     }
+    pushEvent({
+      at: new Date().toISOString(),
+      type: "tool_request",
+      message: "submit_pharmacy_request",
+      data: params,
+    });
+    const result = await mockPharmacy.mutateAsync({
+      body: {
+        pharmacy: (params.pharmacy as "walgreens" | "cvs" | "other") || "other",
+        requestType:
+          (params.requestType as
+            | "refill_status"
+            | "pickup_ready_check"
+            | "transfer_request"
+            | "general_question") || "general_question",
+        medicationName:
+          typeof params.medicationName === "string" ? params.medicationName : undefined,
+        details: typeof params.details === "string" ? params.details : undefined,
+      },
+    });
+    const nextResolution: ResolutionValue = {
+      type: "pharmacy_request",
+      summary: result.message,
+      confirmationId: result.confirmationId,
+      pharmacy: String(params.pharmacy ?? "other"),
+    };
+    resolutionRef.current = nextResolution;
+    setResolution(nextResolution);
+    pushEvent({
+      at: new Date().toISOString(),
+      type: "tool_response",
+      message: result.message,
+      data: result,
+    });
+    return JSON.stringify(result);
   });
 
   useConversationClientTool("confirm_next_step", async (params) => {
-    setToolWorking(true);
-    try {
-      const nextResolution: ResolutionValue = {
-        type: (params.nextStepType as ResolutionValue["type"]) || "other",
-        summary: String(params.summary ?? "Next step confirmed"),
-        reassurance:
-          typeof params.reassurance === "string" ? params.reassurance : undefined,
-        confirmationId: resolutionRef.current?.confirmationId,
-      };
-      resolutionRef.current = nextResolution;
-      setResolution(nextResolution);
-      pushEvent({
-        at: new Date().toISOString(),
-        type: "tool_response",
-        message: "Confirmed next step",
-        data: nextResolution,
-      });
-      return JSON.stringify({ ok: true, resolution: nextResolution });
-    } finally {
-      setToolWorking(false);
+    if (!toolEnabled("confirm_next_step")) {
+      return JSON.stringify({ ok: false, error: "Tool disabled for this agent" });
     }
+    const nextResolution: ResolutionValue = {
+      type: (params.nextStepType as ResolutionValue["type"]) || "other",
+      summary: String(params.summary ?? "Next step confirmed"),
+      reassurance:
+        typeof params.reassurance === "string" ? params.reassurance : undefined,
+      confirmationId: resolutionRef.current?.confirmationId,
+    };
+    resolutionRef.current = nextResolution;
+    setResolution(nextResolution);
+    pushEvent({
+      at: new Date().toISOString(),
+      type: "tool_response",
+      message: "Confirmed next step",
+      data: nextResolution,
+    });
+    return JSON.stringify({ ok: true, resolution: nextResolution });
   });
 
   useConversationClientTool("request_human_handoff", async (params) => {
-    setToolWorking(true);
-    try {
-      const nextResolution: ResolutionValue = {
-        type: "human_handoff",
-        summary: String(params.reason ?? "Human handoff requested"),
-        handoffReason: String(params.reason ?? "Insufficient information"),
-        details: {
-          missingInformation: params.missingInformation,
-          urgency: params.urgency,
-        },
-      };
-      resolutionRef.current = nextResolution;
-      setResolution(nextResolution);
-      pushEvent({
-        at: new Date().toISOString(),
-        type: "watch",
-        message: `Handoff: ${nextResolution.summary}`,
-        data: { level: "warning", category: "handoff", ...params },
-      });
-      return JSON.stringify({
-        ok: true,
-        queued: true,
-        message:
-          "Human care team notified (mock). Agent should stop guessing and wait for handoff.",
-      });
-    } finally {
-      setToolWorking(false);
+    if (!toolEnabled("request_human_handoff")) {
+      return JSON.stringify({ ok: false, error: "Tool disabled for this agent" });
     }
+    const nextResolution: ResolutionValue = {
+      type: "human_handoff",
+      summary: String(params.reason ?? "Human handoff requested"),
+      handoffReason: String(params.reason ?? "Insufficient information"),
+      details: {
+        missingInformation: params.missingInformation,
+        urgency: params.urgency,
+      },
+    };
+    resolutionRef.current = nextResolution;
+    setResolution(nextResolution);
+    pushEvent({
+      at: new Date().toISOString(),
+      type: "watch",
+      message: `Handoff: ${nextResolution.summary}`,
+      data: { level: "warning", category: "handoff", ...params },
+    });
+    return JSON.stringify({
+      ok: true,
+      queued: true,
+      message:
+        "Human care team notified (mock). Agent should stop guessing and wait for handoff.",
+    });
   });
 
   useConversationClientTool("flag_watch_event", async (params) => {
-    setToolWorking(true);
-    try {
-      pushEvent({
-        at: new Date().toISOString(),
-        type: "watch",
-        message: String(params.message ?? "Watch event"),
-        data: {
-          level: params.level,
-          category: params.category,
-        },
-      });
-      return JSON.stringify({ ok: true });
-    } finally {
-      setToolWorking(false);
+    if (!toolEnabled("flag_watch_event")) {
+      return JSON.stringify({ ok: false, error: "Tool disabled for this agent" });
     }
+    pushEvent({
+      at: new Date().toISOString(),
+      type: "watch",
+      message: String(params.message ?? "Watch event"),
+      data: {
+        level: params.level,
+        category: params.category,
+      },
+    });
+    return JSON.stringify({ ok: true });
   });
 
   const persistEndedSession = async (options?: {
@@ -558,7 +667,6 @@ function Level4AgentExperience() {
     const sessionId = activeSessionIdRef.current;
     if (sessionId == null || isClosingRef.current) return;
     isClosingRef.current = true;
-    setToolWorking(false);
 
     const endedAt = new Date();
     const startedAt = startedAtRef.current ?? endedAt.getTime();
@@ -613,7 +721,6 @@ function Level4AgentExperience() {
       setConversationId(null);
       startedAtRef.current = null;
       isClosingRef.current = false;
-      setToolWorking(false);
     }
   };
 
@@ -625,7 +732,7 @@ function Level4AgentExperience() {
   };
 
   const beginConversation = async () => {
-    if (isLive) return;
+    if (isLive || selectedAgentId == null) return;
     setLocalError(null);
     setLiveTranscript([]);
     setClinicalContext({});
@@ -644,13 +751,12 @@ function Level4AgentExperience() {
 
     try {
       const started = await startSession.mutateAsync({
-        body: {
-          memoryBank,
-          forceSyncAgent: true,
-        },
+        path: { id: String(selectedAgentId) },
+        body: { memoryBank, forceSyncAgent: true },
       });
 
       memoryBankRef.current = started.memoryBank;
+      setEnabledToolsLive(started.enabledTools);
       setActiveSessionId(started.session.id);
       activeSessionIdRef.current = started.session.id;
       setConversationId(started.conversationId);
@@ -672,7 +778,6 @@ function Level4AgentExperience() {
         onDisconnect: (details) => {
           const typedDetails = details as DisconnectDetails;
           const detailText = formatDisconnectDetails(typedDetails);
-          setToolWorking(false);
           pushEvent({
             at: new Date().toISOString(),
             type: typedDetails.reason === "error" ? "error" : "status",
@@ -782,16 +887,7 @@ function Level4AgentExperience() {
             data: request as unknown as Record<string, unknown>,
           });
           recomputeLocalMetrics();
-        },
-        onAgentToolResponse: (response) => {
-          setToolWorking(false);
-          pushEvent({
-            at: new Date().toISOString(),
-            type: "tool_response",
-            message: "Agent tool response",
-            data: response as unknown as Record<string, unknown>,
-          });
-          recomputeLocalMetrics();
+          window.setTimeout(() => setToolWorking(false), 8000);
         },
         onGuardrailTriggered: () => {
           pushEvent({
@@ -806,15 +902,88 @@ function Level4AgentExperience() {
       setLocalError(getErrorMessage(err) || "Failed to start Level 4 conversation");
       setActiveSessionId(null);
       activeSessionIdRef.current = null;
-      setToolWorking(false);
+    }
+  };
+
+  const patchDraft = <K extends keyof Level4DraftSettings>(
+    key: K,
+    value: Level4DraftSettings[K],
+  ) => {
+    setDraft((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const toggleTool = (tool: ToolOption) => {
+    setDraft((prev) => {
+      const exists = prev.enabledTools.includes(tool);
+      if (exists && prev.enabledTools.length === 1) return prev;
+      return {
+        ...prev,
+        enabledTools: exists
+          ? prev.enabledTools.filter((item) => item !== tool)
+          : [...prev.enabledTools, tool],
+      };
+    });
+  };
+
+  const handlePrefillFreeText = async () => {
+    setLocalError(null);
+    try {
+      const composed = await composeDefaults.mutateAsync({
+        body: draftToBody(draft),
+      });
+      setDraft((prev) => ({
+        ...prev,
+        displayName: composed.displayName,
+        systemPrompt: composed.systemPrompt,
+        firstMessage: composed.firstMessage,
+        asrKeywordsText: listToText(composed.asrKeywords),
+        interruptionIgnoreTermsText: listToText(composed.interruptionIgnoreTerms),
+      }));
+    } catch (err) {
+      setLocalError(getErrorMessage(err) || "Failed to compose defaults from dials");
+    }
+  };
+
+  const handleCreateAgent = async () => {
+    setLocalError(null);
+    try {
+      const created = await createAgent.mutateAsync({ body: draftToBody(draft) });
+      setSelectedAgentId(created.id);
+      setDraft(draftFromAgent(created));
+    } catch (err) {
+      setLocalError(getErrorMessage(err) || "Failed to create agent");
+    }
+  };
+
+  const handleUpdateAgent = async () => {
+    if (selectedAgentId == null) return;
+    setLocalError(null);
+    try {
+      const updated = await updateAgent.mutateAsync({
+        path: { id: String(selectedAgentId) },
+        body: draftToBody(draft),
+      });
+      setDraft(draftFromAgent(updated));
+    } catch (err) {
+      setLocalError(getErrorMessage(err) || "Failed to update agent");
     }
   };
 
   const mutationError = getErrorMessage(
-    startSession.error || updateSession.error || deleteSession.error,
+    composeDefaults.error ||
+      createAgent.error ||
+      updateAgent.error ||
+      deleteAgent.error ||
+      startSession.error ||
+      updateSession.error ||
+      deleteSession.error,
   );
 
   const watchEvents = events.filter((event) => event.type === "watch");
+  const visibleSessions =
+    selectedAgentId == null
+      ? sessions ?? []
+      : (sessions ?? []).filter((session) => session.agentId === selectedAgentId);
 
   return (
     <main className="flex min-h-dvh flex-1 justify-center bg-primary px-4 py-10">
@@ -826,124 +995,432 @@ function Level4AgentExperience() {
           <div className="flex flex-col gap-2">
             <h1 className="text-display-xs font-semibold text-primary">Level 4 Agent</h1>
             <p className="text-md text-tertiary">
-              Daphne v2 is frozen with a session memory bank, Exa web search, and native
-              tool-call typing sounds — fill the bank, start a call, and watch clinical tools
-              plus live observability.
+              Same tunable harness as Level 3, plus a session memory bank, Exa web search,
+              and native tool-call typing sounds. Save configurations as agents, load a
+              memory bank, then talk with full observability.
             </p>
           </div>
         </header>
 
-        <div className="flex flex-col gap-4 rounded-2xl p-6 shadow-lg ring-1 ring-secondary">
+        <div className="flex flex-col gap-4 rounded-2xl p-6 ring-1 ring-secondary">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-primary">Memory bank & call</h2>
+              <h2 className="text-lg font-semibold text-primary">Agent settings</h2>
               <p className="text-sm text-tertiary">
-                Paste personal context Daphne can look up with{" "}
-                <code className="text-xs">query_memory_bank</code> before you start.
+                All inputs are enums/selectors so saved agents map cleanly to ElevenLabs
+                config.
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              {toolWorking ? (
-                <Badge color="brand" size="sm" type="pill-color">
-                  Looking something up…
-                </Badge>
-              ) : null}
-              {!isLive ? (
-                <Button
-                  size="md"
-                  iconLeading={Microphone01}
-                  onClick={beginConversation}
-                  isLoading={startSession.isPending}
-                  isDisabled={startSession.isPending || agentLoading}
-                >
-                  Start conversation
-                </Button>
-              ) : (
-                <Button
-                  size="md"
-                  color="secondary-destructive"
-                  iconLeading={PhoneHangUp}
-                  onClick={endLiveConversation}
-                  isLoading={updateSession.isPending}
-                >
-                  End conversation
-                </Button>
-              )}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="md"
+                color="secondary"
+                onClick={handlePrefillFreeText}
+                isLoading={composeDefaults.isPending}
+                isDisabled={isLive || composeDefaults.isPending}
+              >
+                Prefill text from dials
+              </Button>
+              <Button
+                size="md"
+                color="secondary"
+                onClick={handleCreateAgent}
+                isLoading={createAgent.isPending}
+                isDisabled={isLive || createAgent.isPending}
+              >
+                Save as new agent
+              </Button>
+              <Button
+                size="md"
+                onClick={handleUpdateAgent}
+                isLoading={updateAgent.isPending}
+                isDisabled={
+                  isLive || selectedAgentId == null || updateAgent.isPending
+                }
+              >
+                Update selected
+              </Button>
             </div>
           </div>
 
-          <label className="flex flex-col gap-2">
-            <span className="text-sm font-semibold text-secondary">Memory bank</span>
-            <textarea
-              className="min-h-40 rounded-xl border border-secondary bg-primary px-3 py-3 text-sm text-primary placeholder:text-quaternary disabled:opacity-60"
-              value={memoryBank}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <SelectField
+              label="Persona (name + first message)"
+              value={draft.personaPreset}
+              options={PERSONA_PRESETS}
+              labels={LABELS.personaPreset}
               disabled={isLive}
-              placeholder={`Example:\nPreferred pharmacy: Walgreens on Main St\nMedications: lisinopril 10mg daily, metformin 500mg BID\nAllergies: penicillin\nCaregiver: spouse Sam, prefers evening callbacks`}
-              onChange={(event) => setMemoryBank(event.target.value)}
+              onChange={(value) => patchDraft("personaPreset", value)}
             />
-          </label>
-
-          <div className="grid gap-3 rounded-xl bg-secondary p-4 text-sm text-secondary ring-1 ring-secondary sm:grid-cols-2 lg:grid-cols-4">
-            {agentLoading && !agent ? (
-              <p className="text-tertiary sm:col-span-2 lg:col-span-4">Loading agent…</p>
-            ) : agent ? (
-              <>
-                <div>
-                  <p className="text-tertiary">Display name</p>
-                  <p className="font-semibold text-primary">{agent.displayName}</p>
-                </div>
-                <div>
-                  <p className="text-tertiary">LLM</p>
-                  <p className="font-semibold text-primary">{agent.llm}</p>
-                </div>
-                <div>
-                  <p className="text-tertiary">Voice / TTS</p>
-                  <p className="font-semibold text-primary">
-                    {agent.voicePreset} · {agent.ttsModel}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-tertiary">First message</p>
-                  <p className="font-medium text-primary">{agent.firstMessage}</p>
-                </div>
-              </>
-            ) : (
-              <p className="text-tertiary sm:col-span-2 lg:col-span-4">
-                Agent metadata unavailable.
-              </p>
-            )}
+            <SelectField
+              label="Prompt profile"
+              value={draft.promptProfile}
+              options={PROMPT_PROFILES}
+              labels={LABELS.promptProfile}
+              disabled={isLive}
+              onChange={(value) => patchDraft("promptProfile", value)}
+            />
+            <SelectField
+              label="Variant label"
+              value={draft.variantLabel}
+              options={VARIANT_LABELS}
+              labels={LABELS.variantLabel}
+              disabled={isLive}
+              onChange={(value) => patchDraft("variantLabel", value)}
+            />
+            <SelectField
+              label="Communication style"
+              value={draft.communicationStyle}
+              options={COMMUNICATION_STYLES}
+              labels={LABELS.communicationStyle}
+              disabled={isLive}
+              onChange={(value) => patchDraft("communicationStyle", value)}
+            />
+            <SelectField
+              label="Explanation level"
+              value={draft.explanationLevel}
+              options={EXPLANATION_LEVELS}
+              labels={LABELS.explanationLevel}
+              disabled={isLive}
+              onChange={(value) => patchDraft("explanationLevel", value)}
+            />
+            <SelectField
+              label="Safety posture"
+              value={draft.safetyPosture}
+              options={SAFETY_POSTURES}
+              labels={LABELS.safetyPosture}
+              disabled={isLive}
+              onChange={(value) => patchDraft("safetyPosture", value)}
+            />
+            <SelectField
+              label="Resolution bias"
+              value={draft.resolutionBias}
+              options={RESOLUTION_BIASES}
+              labels={LABELS.resolutionBias}
+              disabled={isLive}
+              onChange={(value) => patchDraft("resolutionBias", value)}
+            />
+            <SelectField
+              label="Turn eagerness"
+              value={draft.turnEagerness}
+              options={TURN_EAGERNESS_OPTIONS}
+              labels={LABELS.turnEagerness}
+              disabled={isLive}
+              onChange={(value) => patchDraft("turnEagerness", value)}
+            />
+            <SelectField
+              label="Interruptions"
+              value={draft.interruptionMode}
+              options={INTERRUPTION_MODES}
+              labels={LABELS.interruptionMode}
+              disabled={isLive}
+              onChange={(value) => patchDraft("interruptionMode", value)}
+            />
+            <SelectField
+              label="Voice"
+              value={draft.voicePreset}
+              options={VOICE_PRESETS}
+              labels={LABELS.voicePreset}
+              disabled={isLive}
+              onChange={(value) => patchDraft("voicePreset", value)}
+            />
+            <SelectField
+              label="TTS model"
+              value={draft.ttsModel}
+              options={TTS_MODELS}
+              labels={LABELS.ttsModel}
+              disabled={isLive}
+              onChange={(value) => patchDraft("ttsModel", value)}
+            />
+            <SelectField
+              label="LLM"
+              value={draft.llm}
+              options={LLM_OPTIONS}
+              labels={LABELS.llm}
+              disabled={isLive}
+              onChange={(value) => patchDraft("llm", value)}
+            />
           </div>
 
-          <p className="text-sm text-tertiary">
-            Status:{" "}
-            <span className="font-medium text-secondary">
-              {status === "disconnected" ? "ready" : status}
-            </span>
-            {mode !== "idle" ? ` · ${mode}` : ""}
-            {conversationId ? (
-              <span className="ml-2 text-xs text-quaternary">conv: {conversationId}</span>
-            ) : null}
-          </p>
+          <div className="flex flex-col gap-2">
+            <p className="text-sm font-semibold text-secondary">Enabled tools</p>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {TOOL_OPTIONS.map((tool) => {
+                const checked = draft.enabledTools.includes(tool);
+                return (
+                  <label
+                    key={tool}
+                    className={cx(
+                      "flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm ring-1 ring-secondary",
+                      checked ? "bg-secondary text-primary" : "text-tertiary",
+                      isLive && "cursor-not-allowed opacity-60",
+                    )}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      disabled={isLive}
+                      onChange={() => toggleTool(tool)}
+                    />
+                    {LABELS.enabledTools[tool]}
+                  </label>
+                );
+              })}
+            </div>
+          </div>
 
-          {(localError || mutationError || isError) && (
-            <p className="text-sm text-error-primary">
-              {localError ||
-                mutationError ||
-                getErrorMessage(error) ||
-                "Something went wrong"}
+          <div className="flex flex-col gap-4 border-t border-secondary pt-4">
+            <div className="flex flex-col gap-1">
+              <h3 className="text-md font-semibold text-primary">Free-text overrides</h3>
+              <p className="text-sm text-tertiary">
+                Leave blank to use dial-composed defaults on save. Use “Prefill text from
+                dials” to load a starting prompt, then edit freely.
+              </p>
+            </div>
+
+            <label className="flex flex-col gap-2">
+              <span className="text-sm font-semibold text-secondary">Display name</span>
+              <input
+                className="rounded-lg border border-secondary bg-primary px-3 py-2 text-sm text-primary"
+                value={draft.displayName}
+                disabled={isLive}
+                maxLength={120}
+                placeholder="e.g. Mira Pilot — thorough intake"
+                onChange={(event) => patchDraft("displayName", event.target.value)}
+              />
+            </label>
+
+            <label className="flex flex-col gap-2">
+              <span className="text-sm font-semibold text-secondary">First message</span>
+              <textarea
+                className="min-h-20 rounded-lg border border-secondary bg-primary px-3 py-2 text-sm text-primary"
+                value={draft.firstMessage}
+                disabled={isLive}
+                maxLength={1000}
+                placeholder="What the agent says when the call starts"
+                onChange={(event) => patchDraft("firstMessage", event.target.value)}
+              />
+            </label>
+
+            <label className="flex flex-col gap-2">
+              <span className="text-sm font-semibold text-secondary">System prompt</span>
+              <textarea
+                className="min-h-56 rounded-lg border border-secondary bg-primary px-3 py-2 font-mono text-xs text-primary"
+                value={draft.systemPrompt}
+                disabled={isLive}
+                maxLength={20000}
+                placeholder="Full system prompt controlling how the agent responds"
+                onChange={(event) => patchDraft("systemPrompt", event.target.value)}
+              />
+            </label>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <label className="flex flex-col gap-2">
+                <span className="text-sm font-semibold text-secondary">
+                  ASR keywords (comma-separated)
+                </span>
+                <textarea
+                  className="min-h-24 rounded-lg border border-secondary bg-primary px-3 py-2 text-sm text-primary"
+                  value={draft.asrKeywordsText}
+                  disabled={isLive}
+                  placeholder="medication, pharmacy, refill"
+                  onChange={(event) => patchDraft("asrKeywordsText", event.target.value)}
+                />
+              </label>
+              <label className="flex flex-col gap-2">
+                <span className="text-sm font-semibold text-secondary">
+                  Interruption ignore terms (comma-separated)
+                </span>
+                <textarea
+                  className="min-h-24 rounded-lg border border-secondary bg-primary px-3 py-2 text-sm text-primary"
+                  value={draft.interruptionIgnoreTermsText}
+                  disabled={isLive}
+                  placeholder="uh huh, gotcha, okay"
+                  onChange={(event) =>
+                    patchDraft("interruptionIgnoreTermsText", event.target.value)
+                  }
+                />
+              </label>
+            </div>
+
+            <label className="flex flex-col gap-2">
+              <span className="text-sm font-semibold text-secondary">
+                Extra guardrail instruction
+              </span>
+              <textarea
+                className="min-h-24 rounded-lg border border-secondary bg-primary px-3 py-2 text-sm text-primary"
+                value={draft.extraGuardrailPrompt}
+                disabled={isLive}
+                maxLength={2000}
+                placeholder="Optional custom rule, e.g. never mention competitor clinics"
+                onChange={(event) =>
+                  patchDraft("extraGuardrailPrompt", event.target.value)
+                }
+              />
+            </label>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <h2 className="text-lg font-semibold text-primary">Saved agents</h2>
+          {agentsLoading ? (
+            <p className="text-sm text-tertiary">Loading agents…</p>
+          ) : !agents?.length ? (
+            <p className="text-sm text-tertiary">
+              No saved Level 4 agents yet. Configure settings above and save a new agent.
             </p>
+          ) : (
+            <ul className="grid gap-3 md:grid-cols-2">
+              {agents.map((agent) => {
+                const active = agent.id === selectedAgentId;
+                return (
+                  <li
+                    key={agent.id}
+                    className={cx(
+                      "flex flex-col gap-3 rounded-xl p-4 ring-1 transition",
+                      active
+                        ? "bg-secondary ring-brand-600"
+                        : "ring-secondary hover:bg-primary_hover",
+                    )}
+                  >
+                    <button
+                      type="button"
+                      className="flex flex-col gap-1 text-left"
+                      disabled={isLive}
+                      onClick={() => {
+                        setSelectedAgentId(agent.id);
+                        setDraft(draftFromAgent(agent));
+                      }}
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-semibold text-primary">{agent.displayName}</p>
+                        {active ? (
+                          <Badge color="brand" size="sm" type="pill-color">
+                            selected
+                          </Badge>
+                        ) : null}
+                      </div>
+                      <p className="text-xs text-tertiary">
+                        {agent.llm} · {agent.ttsModel} · {agent.voicePreset} · turn{" "}
+                        {agent.turnEagerness}
+                      </p>
+                      <p className="text-xs text-quaternary">
+                        {agent.enabledTools.length} tools · {agent.safetyPosture} safety ·{" "}
+                        {agent.resolutionBias.replace("_", " ")}
+                      </p>
+                    </button>
+                    <Button
+                      color="secondary-destructive"
+                      size="sm"
+                      iconLeading={Trash01}
+                      isDisabled={isLive || deleteAgent.isPending}
+                      onClick={() => {
+                        deleteAgent.mutate(
+                          { path: { id: String(agent.id) } },
+                          {
+                            onSuccess: () => {
+                              if (selectedAgentId === agent.id) {
+                                setSelectedAgentId(null);
+                                setDraft(DEFAULT_DRAFT_SETTINGS);
+                              }
+                            },
+                          },
+                        );
+                      }}
+                    >
+                      Delete agent
+                    </Button>
+                  </li>
+                );
+              })}
+            </ul>
           )}
         </div>
 
         <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="flex flex-col gap-4 rounded-2xl p-6 ring-1 ring-secondary">
-            <h2 className="text-lg font-semibold text-primary">Live transcript</h2>
+          <div className="flex flex-col gap-4 rounded-2xl p-6 shadow-lg ring-1 ring-secondary">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-primary">Live conversation</h2>
+                <p className="text-sm text-tertiary">
+                  Agent:{" "}
+                  <span className="font-medium text-secondary">
+                    {selectedAgent?.displayName ?? "none selected"}
+                  </span>
+                  {" · "}
+                  Status:{" "}
+                  <span className="font-medium text-secondary">
+                    {status === "disconnected" ? "ready" : status}
+                  </span>
+                  {mode !== "idle" ? ` · ${mode}` : ""}
+                </p>
+                {conversationId ? (
+                  <p className="mt-1 text-xs text-quaternary">conv: {conversationId}</p>
+                ) : null}
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {toolWorking ? (
+                  <Badge color="brand" size="sm" type="pill-color">
+                    Looking something up…
+                  </Badge>
+                ) : null}
+                {!isLive ? (
+                  <Button
+                    size="md"
+                    iconLeading={Microphone01}
+                    onClick={beginConversation}
+                    isLoading={startSession.isPending}
+                    isDisabled={selectedAgentId == null || startSession.isPending}
+                  >
+                    Start conversation
+                  </Button>
+                ) : (
+                  <Button
+                    size="md"
+                    color="secondary-destructive"
+                    iconLeading={PhoneHangUp}
+                    onClick={endLiveConversation}
+                    isLoading={updateSession.isPending}
+                  >
+                    End conversation
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <label className="flex flex-col gap-2">
+              <span className="text-sm font-semibold text-secondary">
+                Session memory bank
+              </span>
+              <textarea
+                className="min-h-32 rounded-xl border border-secondary bg-primary px-3 py-3 text-sm text-primary placeholder:text-quaternary disabled:opacity-60"
+                value={memoryBank}
+                disabled={isLive}
+                placeholder={`Example:\nPreferred pharmacy: Walgreens on Main St\nMedications: lisinopril 10mg daily, metformin 500mg BID\nAllergies: penicillin\nCaregiver: spouse Sam, prefers evening callbacks`}
+                onChange={(event) => setMemoryBank(event.target.value)}
+              />
+              <span className="text-xs text-tertiary">
+                Available to the agent via <code className="text-xs">query_memory_bank</code>{" "}
+                for this call only. Exa web search and typing sounds stay enabled on every
+                Level 4 agent.
+              </span>
+            </label>
+
+            {(localError || mutationError || isError) && (
+              <p className="text-sm text-error-primary">
+                {localError ||
+                  mutationError ||
+                  getErrorMessage(error) ||
+                  "Something went wrong"}
+              </p>
+            )}
+
             <div className="flex max-h-72 flex-col gap-3 overflow-y-auto rounded-xl bg-secondary p-4">
               {liveTranscript.length === 0 ? (
                 <p className="text-sm text-tertiary">
                   {isLive
-                    ? "Listening… Daphne will greet you shortly."
-                    : "Start a conversation to stream the transcript here."}
+                    ? "Listening… the agent will greet you shortly."
+                    : "Select a saved agent and start a conversation to stream the transcript."}
                 </p>
               ) : (
                 liveTranscript.map((entry, index) => (
@@ -1025,9 +1502,9 @@ function Level4AgentExperience() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-tertiary">TTS model</p>
+                  <p className="text-tertiary">LLM / TTS</p>
                   <p className="font-semibold text-primary">
-                    {metricValue(metrics.ttsModel)}
+                    {metricValue(metrics.llm)} / {metricValue(metrics.ttsModel)}
                   </p>
                 </div>
               </div>
@@ -1051,7 +1528,7 @@ function Level4AgentExperience() {
                 </div>
               ) : (
                 <p className="text-xs text-tertiary">
-                  Watch flags appear when Daphne marks uncertainty, safety stops, or
+                  Watch flags appear when the agent marks uncertainty, safety stops, or
                   handoffs.
                 </p>
               )}
@@ -1060,14 +1537,12 @@ function Level4AgentExperience() {
                 {events.length === 0 ? (
                   <span>Raw event log empty</span>
                 ) : (
-                  events
-                    .slice(-40)
-                    .map((event, index) => (
-                      <div key={`${event.at}-${event.type}-${index}`}>
-                        [{new Date(event.at).toLocaleTimeString()}] {event.type}:{" "}
-                        {event.message}
-                      </div>
-                    ))
+                  events.slice(-40).map((event, index) => (
+                    <div key={`${event.at}-${event.type}-${index}`}>
+                      [{new Date(event.at).toLocaleTimeString()}] {event.type}:{" "}
+                      {event.message}
+                    </div>
+                  ))
                 )}
               </div>
             </div>
@@ -1076,16 +1551,16 @@ function Level4AgentExperience() {
 
         <div className="flex flex-col gap-3">
           <h2 className="text-lg font-semibold text-primary">Past conversations</h2>
-          {isLoading ? (
+          {sessionsLoading ? (
             <p className="text-md text-tertiary">Loading conversations…</p>
-          ) : !sessions?.length ? (
+          ) : !visibleSessions.length ? (
             <p className="text-md text-tertiary">
-              No Level 4 visits yet. Start one above to persist transcript, clinical context,
-              and metrics.
+              No Level 4 visits yet for this agent. Start one above to persist transcript,
+              clinical context, and metrics.
             </p>
           ) : (
             <ul className="flex flex-col gap-3">
-              {sessions.map((session) => (
+              {visibleSessions.map((session) => (
                 <li
                   key={session.id}
                   className="flex flex-col gap-3 rounded-xl p-4 ring-1 ring-secondary transition hover:bg-primary_hover sm:flex-row sm:items-start sm:justify-between"
@@ -1106,15 +1581,10 @@ function Level4AgentExperience() {
                       >
                         {session.status}
                       </Badge>
-                      {session.resolution?.type === "human_handoff" ? (
-                        <Badge color="warning" size="sm" type="pill-color">
-                          handoff
-                        </Badge>
-                      ) : null}
                     </div>
                     <p className="text-sm text-tertiary">
-                      {formatDateTime(session.startedAt)} ·{" "}
-                      {formatDuration(session.durationMs)} · {session.agentDisplayName}
+                      {session.agentDisplayName} · {formatDateTime(session.startedAt)} ·{" "}
+                      {formatDuration(session.durationMs)}
                       {session.memoryBank.trim()
                         ? ` · memory ${session.memoryBank.trim().length} chars`
                         : ""}
@@ -1157,7 +1627,10 @@ function Level4AgentExperience() {
                       {sessionTitle(selectedSession)}
                     </h3>
                     <p className="text-sm text-tertiary">
-                      {selectedSession.elevenLabsConversationId || "No remote conversation id"}
+                      {selectedSession.agentDisplayName}
+                      {selectedSession.elevenLabsConversationId
+                        ? ` · ${selectedSession.elevenLabsConversationId}`
+                        : ""}
                     </p>
                   </div>
                   <Button
@@ -1197,15 +1670,6 @@ function Level4AgentExperience() {
                   </div>
                 </dl>
 
-                {selectedSession.memoryBank.trim() ? (
-                  <div className="flex flex-col gap-2">
-                    <h4 className="text-sm font-semibold text-primary">Memory bank</h4>
-                    <pre className="max-h-36 overflow-auto whitespace-pre-wrap rounded-xl bg-secondary p-3 text-xs text-secondary">
-                      {selectedSession.memoryBank}
-                    </pre>
-                  </div>
-                ) : null}
-
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="flex flex-col gap-2">
                     <h4 className="text-sm font-semibold text-primary">Clinical context</h4>
@@ -1220,6 +1684,15 @@ function Level4AgentExperience() {
                     </pre>
                   </div>
                 </div>
+
+                {selectedSession.memoryBank.trim() ? (
+                  <div className="flex flex-col gap-2">
+                    <h4 className="text-sm font-semibold text-primary">Memory bank</h4>
+                    <pre className="max-h-40 overflow-auto whitespace-pre-wrap rounded-xl bg-secondary p-3 text-xs text-secondary">
+                      {selectedSession.memoryBank}
+                    </pre>
+                  </div>
+                ) : null}
 
                 {selectedSession.resolution ? (
                   <div className="rounded-xl bg-secondary p-3 text-sm">

@@ -37,6 +37,7 @@ You have two extra tools for personalization and up-to-date facts:
 
 While tools run, the caller hears a short waiting cue. Do not narrate tool mechanics unless helpful. Prefer tools over guessing when personalization or freshness matters.`;
 
+/** @deprecated Prefer resolveLevel4SystemPrompt(settings) for dynamic agents. */
 export function buildLevel4SystemPrompt(): string {
   return `${DAPHNE_V2_SYSTEM_PROMPT.trim()}\n\n${LEVEL4_PROMPT_APPENDIX}`;
 }

@@ -1,6 +1,7 @@
 import type { ElevenLabs } from "@elevenlabs/elevenlabs-js";
 
-import { DAPHNE_V2_SETTINGS } from "./daphne-v2.js";
+import type { ToolOption } from "./settings.js";
+import { TOOL_OPTIONS } from "./settings.js";
 
 type ClientTool = Extract<
   ElevenLabs.PromptAgentApiModelInputToolsItem,
@@ -29,7 +30,7 @@ const TOOL_SOUND = {
   interruptionMode: "disable_during_tool_and_turn" as const,
 };
 
-const CLINICAL_TOOLS: Record<string, Omit<ClientTool, "type">> = {
+const CLINICAL_TOOLS: Record<ToolOption, Omit<ClientTool, "type">> = {
   update_clinical_context: {
     name: "update_clinical_context",
     description:
@@ -226,8 +227,10 @@ export function buildLevel4ExaWebSearchTool(exaApiKey: string): WebhookTool {
   };
 }
 
-export function buildLevel4ClientTools(): ClientTool[] {
-  const clinical = DAPHNE_V2_SETTINGS.enabledTools
+export function buildLevel4ClientTools(enabledTools: ToolOption[]): ClientTool[] {
+  const selected =
+    enabledTools.length > 0 ? enabledTools : ([...TOOL_OPTIONS] as ToolOption[]);
+  const clinical = selected
     .map((name) => CLINICAL_TOOLS[name])
     .filter(Boolean)
     .map((tool) => ({ type: "client" as const, ...tool }));

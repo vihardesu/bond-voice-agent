@@ -56,10 +56,10 @@ const agents = [
     href: "/level4",
     level: "Level 4",
     title: "Level 4 Agent",
-    subtitle: "Frozen Daphne v2 + memory",
+    subtitle: "Tunable agents + memory",
     description:
-      "Daphne v2 locked in with a session memory bank, Exa web search, and native tool-call typing sounds — same clinical tools as Level 3, without the settings dials.",
-    model: "memory bank · Exa · tool sounds",
+      "Level 3 dials plus a session memory bank, Exa web search, and native tool-call typing sounds — save configs as agents and talk with full observability.",
+    model: "tunable · memory · Exa",
     accent: "from-teal-950 via-slate-900 to-violet-950",
     panel:
       "bg-[radial-gradient(circle_at_16%_24%,rgba(45,212,191,0.34),transparent_44%),radial-gradient(circle_at_84%_76%,rgba(167,139,250,0.24),transparent_40%)]",
