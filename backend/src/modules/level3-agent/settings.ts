@@ -21,7 +21,7 @@ export type ResolutionBias = (typeof RESOLUTION_BIASES)[number];
 export const TURN_EAGERNESS_OPTIONS = ["patient", "normal", "eager"] as const;
 export type TurnEagerness = (typeof TURN_EAGERNESS_OPTIONS)[number];
 
-export const VOICE_PRESETS = ["sarah", "rachel", "george", "brian", "laura"] as const;
+export const VOICE_PRESETS = ["sarah", "jessica", "george", "brian", "laura"] as const;
 export type VoicePreset = (typeof VOICE_PRESETS)[number];
 
 export const TTS_MODELS = ["eleven_flash_v2", "eleven_turbo_v2"] as const;
@@ -114,12 +114,13 @@ export const EXPLANATION_LEVEL_VALUES: Record<ExplanationLevel, number> = {
   thorough: 100,
 };
 
+/** Premade voice IDs verified against the ElevenLabs Voices API. */
 export const VOICE_PRESET_IDS: Record<VoicePreset, string> = {
   sarah: "EXAVITQu4vr4xnSDxMaL",
-  rachel: "21m00Tcm4TlvDq8ikWAM",
+  jessica: "cgSgspJ2msm6clMCkdW9",
   george: "JBFqnCBsd6RMkjVDRZzb",
   brian: "nPczCjzI2devNBz1zQrb",
-  laura: "FGY2WhTUyC82UByhj61r",
+  laura: "FGY2WhTYpPnrIDTdsKH5",
 };
 
 export const PERSONA_PRESET_META: Record<

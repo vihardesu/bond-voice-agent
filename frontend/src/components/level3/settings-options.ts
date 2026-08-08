@@ -19,7 +19,7 @@ export const EXPLANATION_LEVELS = [
 export const SAFETY_POSTURES = ["conservative", "balanced", "assertive"] as const;
 export const RESOLUTION_BIASES = ["fewest_steps", "thorough_intake"] as const;
 export const TURN_EAGERNESS_OPTIONS = ["patient", "normal", "eager"] as const;
-export const VOICE_PRESETS = ["sarah", "rachel", "george", "brian", "laura"] as const;
+export const VOICE_PRESETS = ["sarah", "jessica", "george", "brian", "laura"] as const;
 export const TTS_MODELS = ["eleven_flash_v2", "eleven_turbo_v2"] as const;
 export const LLM_OPTIONS = [
   "gemini-2.5-flash",
@@ -118,7 +118,7 @@ export const LABELS = {
   },
   voicePreset: {
     sarah: "Sarah",
-    rachel: "Rachel",
+    jessica: "Jessica",
     george: "George",
     brian: "Brian",
     laura: "Laura",

@@ -25,6 +25,57 @@ function getClient(): ElevenLabsClient {
   return new ElevenLabsClient({ apiKey: getApiKey() });
 }
 
+export function formatElevenLabsError(error: unknown): string {
+  if (!(error instanceof Error)) {
+    return String(error);
+  }
+
+  const withBody = error as Error & {
+    statusCode?: number;
+    body?: unknown;
+  };
+
+  const detail =
+    withBody.body &&
+    typeof withBody.body === "object" &&
+    withBody.body !== null &&
+    "detail" in withBody.body
+      ? (withBody.body as { detail?: unknown }).detail
+      : undefined;
+
+  if (detail && typeof detail === "object" && detail !== null) {
+    const message =
+      "message" in detail && typeof detail.message === "string"
+        ? detail.message
+        : null;
+    const status =
+      "status" in detail && typeof detail.status === "string"
+        ? detail.status
+        : null;
+    if (message) {
+      return status ? `${status}: ${message}` : message;
+    }
+  }
+
+  const match = error.message.match(/Body:\s*(\{[\s\S]*\})\s*$/);
+  if (match?.[1]) {
+    try {
+      const parsed = JSON.parse(match[1]) as {
+        detail?: { message?: string; status?: string };
+      };
+      if (parsed.detail?.message) {
+        return parsed.detail.status
+          ? `${parsed.detail.status}: ${parsed.detail.message}`
+          : parsed.detail.message;
+      }
+    } catch {
+      // fall through
+    }
+  }
+
+  return error.message;
+}
+
 function endCallTool(): ElevenLabs.SystemToolConfigInput {
   return {
     name: "end_call",

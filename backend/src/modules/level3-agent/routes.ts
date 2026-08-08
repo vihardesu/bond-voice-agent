@@ -8,6 +8,7 @@ import {
   deleteRemoteLevel3Agent,
   extractMetricsFromRemote,
   fetchConversationDetails,
+  formatElevenLabsError,
   syncRemoteLevel3Agent,
 } from "./elevenlabs.js";
 import {
@@ -706,8 +707,7 @@ level3AgentApp.openapi(createAgentRoute, async (c) => {
 
     return c.json(toAgentResponse(row), 201);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to create Level 3 agent";
+    const message = formatElevenLabsError(error) || "Failed to create Level 3 agent";
     console.error("[level3-agent] Create failed", { error: message });
     return c.json({ error: message }, 500);
   }
@@ -759,8 +759,7 @@ level3AgentApp.openapi(updateAgentRoute, async (c) => {
 
     return c.json(toAgentResponse(row), 200);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to update Level 3 agent";
+    const message = formatElevenLabsError(error) || "Failed to update Level 3 agent";
     console.error("[level3-agent] Update failed", { id, error: message });
     return c.json({ error: message }, 500);
   }
@@ -873,8 +872,7 @@ level3AgentApp.openapi(startSessionRoute, async (c) => {
       201,
     );
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to start Level 3 session";
+    const message = formatElevenLabsError(error) || "Failed to start Level 3 session";
     console.error("[level3-agent] Start session failed", {
       agentId: id,
       error: message,

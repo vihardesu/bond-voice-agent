@@ -308,7 +308,7 @@ export type Level3Agent = {
     safetyPosture: 'conservative' | 'balanced' | 'assertive';
     resolutionBias: 'fewest_steps' | 'thorough_intake';
     turnEagerness: 'patient' | 'normal' | 'eager';
-    voicePreset: 'sarah' | 'rachel' | 'george' | 'brian' | 'laura';
+    voicePreset: 'sarah' | 'jessica' | 'george' | 'brian' | 'laura';
     ttsModel: 'eleven_flash_v2' | 'eleven_turbo_v2';
     llm: 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gpt-4o-mini' | 'gpt-4.1-mini' | 'claude-haiku-4-5';
     interruptionMode: 'allow' | 'ignore_backchannels' | 'protect_tools';
@@ -326,7 +326,7 @@ export type CreateLevel3Agent = {
     safetyPosture?: 'conservative' | 'balanced' | 'assertive';
     resolutionBias?: 'fewest_steps' | 'thorough_intake';
     turnEagerness?: 'patient' | 'normal' | 'eager';
-    voicePreset?: 'sarah' | 'rachel' | 'george' | 'brian' | 'laura';
+    voicePreset?: 'sarah' | 'jessica' | 'george' | 'brian' | 'laura';
     ttsModel?: 'eleven_flash_v2' | 'eleven_turbo_v2';
     llm?: 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gpt-4o-mini' | 'gpt-4.1-mini' | 'claude-haiku-4-5';
     interruptionMode?: 'allow' | 'ignore_backchannels' | 'protect_tools';
@@ -342,7 +342,7 @@ export type UpdateLevel3Agent = {
     safetyPosture?: 'conservative' | 'balanced' | 'assertive';
     resolutionBias?: 'fewest_steps' | 'thorough_intake';
     turnEagerness?: 'patient' | 'normal' | 'eager';
-    voicePreset?: 'sarah' | 'rachel' | 'george' | 'brian' | 'laura';
+    voicePreset?: 'sarah' | 'jessica' | 'george' | 'brian' | 'laura';
     ttsModel?: 'eleven_flash_v2' | 'eleven_turbo_v2';
     llm?: 'gemini-2.5-flash' | 'gemini-2.5-flash-lite' | 'gpt-4o-mini' | 'gpt-4.1-mini' | 'claude-haiku-4-5';
     interruptionMode?: 'allow' | 'ignore_backchannels' | 'protect_tools';
