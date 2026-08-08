@@ -1,15 +1,14 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+import { RouteProvider } from "@/providers/route-provider";
+import { ThemeProvider } from "@/providers/theme-provider";
+import "@/styles/globals.css";
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
   subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
 });
 
 export const metadata: Metadata = {
@@ -17,13 +16,22 @@ export const metadata: Metadata = {
   description: "Bond Voice Agent",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export const viewport: Viewport = {
+  colorScheme: "light",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} scroll-smooth`}>
+      <body className="bg-primary font-body antialiased">
+        <RouteProvider>
+          <ThemeProvider>{children}</ThemeProvider>
+        </RouteProvider>
+      </body>
     </html>
   );
 }

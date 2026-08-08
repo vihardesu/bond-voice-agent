@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Cursor Cloud specific instructions
 
-This package is the Next.js 16 frontend (App Router, React 19, Tailwind CSS v4, Turbopack) under `frontend/` in the `bond-voice-agent` monorepo. The Hono API lives in sibling `backend/`. Dependencies for this package are installed with `npm ci` from `frontend/`.
+This package is the Next.js 16 frontend (App Router, React 19, Tailwind CSS v4, Turbopack) under `frontend/` in the `bond-voice-agent` monorepo. The Hono API lives in sibling `backend/`. UI primitives come from Untitled UI (`npx untitledui@latest add …`). Dependencies for this package are installed with `npm ci` from `frontend/`.
 
 Standard commands live in `package.json` scripts; run them from `frontend/`:
 - Dev server: `npm run dev` (serves http://localhost:3000). Turbopack hot-reload picks up edits under `src/` automatically.
