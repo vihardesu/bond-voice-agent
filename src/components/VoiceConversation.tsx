@@ -38,6 +38,8 @@ export default function VoiceConversation() {
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
   const assistantDraftRef = useRef("");
+  const startedAtRef = useRef<Date | null>(null);
+  const transcriptsRef = useRef<TranscriptEntry[]>([]);
 
   function cleanup() {
     dataChannelRef.current?.close();
@@ -65,14 +67,52 @@ export default function VoiceConversation() {
   }, []);
 
   function appendTranscript(role: "user" | "assistant", text: string) {
-    setTranscripts((prev) => [
-      ...prev,
-      {
-        id: `${role}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-        role,
-        text,
-      },
-    ]);
+    setTranscripts((prev) => {
+      const next = [
+        ...prev,
+        {
+          id: `${role}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          role,
+          text,
+        },
+      ];
+      transcriptsRef.current = next;
+      return next;
+    });
+  }
+
+  async function persistConversation(endedAt: Date) {
+    const startedAt = startedAtRef.current;
+    const messages = transcriptsRef.current;
+    if (!startedAt || messages.length === 0) return;
+
+    try {
+      const response = await fetch("/api/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          startedAt: startedAt.toISOString(),
+          endedAt: endedAt.toISOString(),
+          durationMs: endedAt.getTime() - startedAt.getTime(),
+          messages: messages.map((entry) => ({
+            role: entry.role,
+            content: entry.text,
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        const data = (await response.json()) as { error?: string };
+        throw new Error(data.error ?? "Failed to save conversation");
+      }
+    } catch (err) {
+      console.error("Failed to persist conversation:", err);
+      setError(
+        err instanceof Error
+          ? `Conversation ended, but saving failed: ${err.message}`
+          : "Conversation ended, but saving failed",
+      );
+    }
   }
 
   function handleRealtimeEvent(raw: string) {
@@ -119,6 +159,8 @@ export default function VoiceConversation() {
     setError(null);
     setStatus("connecting");
     setTranscripts([]);
+    transcriptsRef.current = [];
+    startedAtRef.current = null;
     assistantDraftRef.current = "";
     setAssistantDraft("");
 
@@ -184,6 +226,7 @@ export default function VoiceConversation() {
       };
       await pc.setRemoteDescription(answer);
 
+      startedAtRef.current = new Date();
       setStatus("connected");
     } catch (err) {
       cleanup();
@@ -194,10 +237,13 @@ export default function VoiceConversation() {
     }
   }
 
-  function stopConversation() {
+  async function stopConversation() {
+    const endedAt = new Date();
     cleanup();
     setStatus("idle");
     setAssistantDraft("");
+    await persistConversation(endedAt);
+    startedAtRef.current = null;
   }
 
   const isConnected = status === "connected";
