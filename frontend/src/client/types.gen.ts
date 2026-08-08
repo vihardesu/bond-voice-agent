@@ -76,6 +76,129 @@ export type UpdateSpeechSession = {
     transcript?: Array<SpeechTranscriptEntry>;
 };
 
+export type EnsureConciergeAgentResponse = {
+    agentId: string;
+    created: boolean;
+};
+
+export type ConciergeDoctorApiError = {
+    error: string;
+};
+
+export type EnsureConciergeAgent = {
+    forceSync?: boolean;
+};
+
+export type ConciergeSession = {
+    id: number;
+    title: string;
+    status: 'active' | 'ended';
+    elevenLabsAgentId: string;
+    elevenLabsConversationId: string | null;
+    communicationStyle: 'patient' | 'balanced' | 'direct';
+    explanationLevel: number;
+    startedAt: string;
+    endedAt: string | null;
+    durationMs: number | null;
+    transcript: Array<ConciergeTranscriptEntry>;
+    clinicalContext: ConciergeClinicalContext;
+    resolution: ConciergeResolution;
+    events: Array<ConciergeObservabilityEvent>;
+    metrics: ConciergeMetrics;
+    createdAt: string;
+    updatedAt: string;
+};
+
+export type ConciergeTranscriptEntry = {
+    role: 'user' | 'agent';
+    text: string;
+    at: string;
+};
+
+export type ConciergeClinicalContext = {
+    symptom?: string;
+    duration?: string;
+    history?: string;
+    currentMedications?: string;
+    unknowns?: string;
+    notes?: string;
+};
+
+export type ConciergeResolution = {
+    type: 'self_care_watch' | 'scheduled_follow_up' | 'pharmacy_request' | 'human_handoff' | 'emergency_care' | 'other';
+    summary: string;
+    confirmationId?: string;
+    reassurance?: string;
+    handoffReason?: string;
+    pharmacy?: string;
+    details?: {
+        [key: string]: unknown;
+    };
+} | null;
+
+export type ConciergeObservabilityEvent = {
+    at: string;
+    type: 'status' | 'transcript' | 'ping' | 'vad' | 'interruption' | 'tool_request' | 'tool_response' | 'watch' | 'guardrail' | 'error' | 'metric' | 'mode';
+    message: string;
+    data?: {
+        [key: string]: unknown;
+    };
+};
+
+export type ConciergeMetrics = {
+    avgLatencyMs?: number | null;
+    latestLatencyMs?: number | null;
+    latencySampleCount?: number;
+    turnCount?: number;
+    toolCallCount?: number;
+    watchEventCount?: number;
+    interruptionCount?: number;
+    avgVadScore?: number | null;
+    elevenLabsCostCredits?: number | null;
+    elevenLabsCostUsd?: number | null;
+    callDurationSecs?: number | null;
+    charging?: unknown;
+    featuresUsage?: unknown;
+    terminationReason?: string | null;
+    analysisSummary?: string | null;
+    ttsModel?: string;
+    asrProvider?: string;
+    turnModel?: string;
+    [key: string]: unknown;
+};
+
+export type StartConciergeSessionResponse = {
+    session: ConciergeSession;
+    conversationToken: string;
+    conversationId: string;
+    dynamicVariables: {
+        communication_style: string;
+        explanation_level: string;
+    };
+};
+
+export type StartConciergeSession = {
+    communicationStyle?: 'patient' | 'balanced' | 'direct';
+    explanationLevel?: number;
+    title?: string;
+    forceSyncAgent?: boolean;
+};
+
+export type UpdateConciergeSession = {
+    title?: string;
+    status?: 'active' | 'ended';
+    endedAt?: string;
+    durationMs?: number;
+    transcript?: Array<ConciergeTranscriptEntry>;
+    clinicalContext?: ConciergeClinicalContext;
+    resolution?: ConciergeResolution;
+    events?: Array<ConciergeObservabilityEvent>;
+    appendEvents?: Array<ConciergeObservabilityEvent>;
+    metrics?: ConciergeMetrics;
+    elevenLabsConversationId?: string;
+    syncRemoteMetrics?: boolean;
+};
+
 export type ListAgentsData = {
     body?: never;
     path?: never;
@@ -326,3 +449,203 @@ export type UpdateSpeechSessionResponses = {
 };
 
 export type UpdateSpeechSessionResponse = UpdateSpeechSessionResponses[keyof UpdateSpeechSessionResponses];
+
+export type EnsureConciergeDoctorAgentData = {
+    body?: EnsureConciergeAgent;
+    path?: never;
+    query?: never;
+    url: '/concierge-doctor/ensure-agent';
+};
+
+export type EnsureConciergeDoctorAgentErrors = {
+    /**
+     * Failed to ensure agent
+     */
+    500: ConciergeDoctorApiError;
+};
+
+export type EnsureConciergeDoctorAgentError = EnsureConciergeDoctorAgentErrors[keyof EnsureConciergeDoctorAgentErrors];
+
+export type EnsureConciergeDoctorAgentResponses = {
+    /**
+     * Agent ready
+     */
+    200: EnsureConciergeAgentResponse;
+};
+
+export type EnsureConciergeDoctorAgentResponse = EnsureConciergeDoctorAgentResponses[keyof EnsureConciergeDoctorAgentResponses];
+
+export type ListConciergeDoctorSessionsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/concierge-doctor/sessions';
+};
+
+export type ListConciergeDoctorSessionsResponses = {
+    /**
+     * All concierge sessions
+     */
+    200: Array<ConciergeSession>;
+};
+
+export type ListConciergeDoctorSessionsResponse = ListConciergeDoctorSessionsResponses[keyof ListConciergeDoctorSessionsResponses];
+
+export type DeleteConciergeDoctorSessionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/concierge-doctor/sessions/{id}';
+};
+
+export type DeleteConciergeDoctorSessionErrors = {
+    /**
+     * Not found
+     */
+    404: ConciergeDoctorApiError;
+};
+
+export type DeleteConciergeDoctorSessionError = DeleteConciergeDoctorSessionErrors[keyof DeleteConciergeDoctorSessionErrors];
+
+export type DeleteConciergeDoctorSessionResponses = {
+    /**
+     * Deleted
+     */
+    204: void;
+};
+
+export type DeleteConciergeDoctorSessionResponse = DeleteConciergeDoctorSessionResponses[keyof DeleteConciergeDoctorSessionResponses];
+
+export type GetConciergeDoctorSessionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/concierge-doctor/sessions/{id}';
+};
+
+export type GetConciergeDoctorSessionErrors = {
+    /**
+     * Not found
+     */
+    404: ConciergeDoctorApiError;
+};
+
+export type GetConciergeDoctorSessionError = GetConciergeDoctorSessionErrors[keyof GetConciergeDoctorSessionErrors];
+
+export type GetConciergeDoctorSessionResponses = {
+    /**
+     * Session found
+     */
+    200: ConciergeSession;
+};
+
+export type GetConciergeDoctorSessionResponse = GetConciergeDoctorSessionResponses[keyof GetConciergeDoctorSessionResponses];
+
+export type UpdateConciergeDoctorSessionData = {
+    body: UpdateConciergeSession;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/concierge-doctor/sessions/{id}';
+};
+
+export type UpdateConciergeDoctorSessionErrors = {
+    /**
+     * Not found
+     */
+    404: ConciergeDoctorApiError;
+    /**
+     * Update failed
+     */
+    500: ConciergeDoctorApiError;
+};
+
+export type UpdateConciergeDoctorSessionError = UpdateConciergeDoctorSessionErrors[keyof UpdateConciergeDoctorSessionErrors];
+
+export type UpdateConciergeDoctorSessionResponses = {
+    /**
+     * Session updated
+     */
+    200: ConciergeSession;
+};
+
+export type UpdateConciergeDoctorSessionResponse = UpdateConciergeDoctorSessionResponses[keyof UpdateConciergeDoctorSessionResponses];
+
+export type StartConciergeDoctorSessionData = {
+    body?: StartConciergeSession;
+    path?: never;
+    query?: never;
+    url: '/concierge-doctor/sessions/start';
+};
+
+export type StartConciergeDoctorSessionErrors = {
+    /**
+     * Failed to start session
+     */
+    500: ConciergeDoctorApiError;
+};
+
+export type StartConciergeDoctorSessionError = StartConciergeDoctorSessionErrors[keyof StartConciergeDoctorSessionErrors];
+
+export type StartConciergeDoctorSessionResponses = {
+    /**
+     * Session started with connection credentials
+     */
+    201: StartConciergeSessionResponse;
+};
+
+export type StartConciergeDoctorSessionResponse = StartConciergeDoctorSessionResponses[keyof StartConciergeDoctorSessionResponses];
+
+export type MockConciergePharmacyRequestData = {
+    body: {
+        pharmacy: 'walgreens' | 'cvs' | 'other';
+        requestType: 'refill_status' | 'pickup_ready_check' | 'transfer_request' | 'general_question';
+        medicationName?: string;
+        details?: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/concierge-doctor/mocks/pharmacy';
+};
+
+export type MockConciergePharmacyRequestResponses = {
+    /**
+     * Mock pharmacy response
+     */
+    200: {
+        confirmationId: string;
+        status: string;
+        message: string;
+    };
+};
+
+export type MockConciergePharmacyRequestResponse = MockConciergePharmacyRequestResponses[keyof MockConciergePharmacyRequestResponses];
+
+export type MockConciergeScheduleFollowUpData = {
+    body: {
+        reason: string;
+        urgency: 'routine' | 'soon' | 'urgent';
+        preferredWindow?: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/concierge-doctor/mocks/schedule';
+};
+
+export type MockConciergeScheduleFollowUpResponses = {
+    /**
+     * Mock schedule response
+     */
+    200: {
+        confirmationId: string;
+        slot: string;
+        message: string;
+    };
+};
+
+export type MockConciergeScheduleFollowUpResponse = MockConciergeScheduleFollowUpResponses[keyof MockConciergeScheduleFollowUpResponses];

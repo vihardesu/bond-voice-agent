@@ -4,6 +4,7 @@ import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { cors } from "hono/cors";
 
+import { conciergeDoctorApp } from "./modules/concierge-doctor/index.js";
 import { speechSessionsApp } from "./modules/speech-sessions/index.js";
 import { agentsApp } from "./routes/agents.js";
 
@@ -29,6 +30,7 @@ app.get("/health", (c) => c.json({ status: "ok" }));
 
 app.route("/", agentsApp);
 app.route("/", speechSessionsApp);
+app.route("/", conciergeDoctorApp);
 
 app.doc("/doc", {
   openapi: "3.0.0",

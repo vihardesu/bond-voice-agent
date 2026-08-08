@@ -10,6 +10,7 @@
     "generate:api": "openapi-ts"
   },
   "dependencies": {
+    "@elevenlabs/react": "^1.12.0",
     "@hey-api/client-fetch": "^0.13.1",
     "@react-stately/utils": "^3.12.1",
     "@tailwindcss/typography": "^0.5.20",
@@ -36,5 +37,8 @@
     "postcss": "^8.5.26",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "livekit-client": "2.16.1"
   }
 }

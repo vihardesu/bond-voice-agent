@@ -3,8 +3,8 @@
 import { type DefaultError, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { createAgent, createSpeechClientSecret, createSpeechSession, deleteAgent, deleteSpeechSession, getAgent, getSpeechSession, listAgents, listSpeechSessions, type Options, updateAgent, updateSpeechSession } from '../sdk.gen';
-import type { CreateAgentData, CreateAgentResponse, CreateSpeechClientSecretData, CreateSpeechClientSecretError, CreateSpeechClientSecretResponse, CreateSpeechSessionData, CreateSpeechSessionResponse, DeleteAgentData, DeleteAgentError, DeleteAgentResponse, DeleteSpeechSessionData, DeleteSpeechSessionError, DeleteSpeechSessionResponse, GetAgentData, GetAgentError, GetAgentResponse, GetSpeechSessionData, GetSpeechSessionError, GetSpeechSessionResponse, ListAgentsData, ListAgentsResponse, ListSpeechSessionsData, ListSpeechSessionsResponse, UpdateAgentData, UpdateAgentError, UpdateAgentResponse, UpdateSpeechSessionData, UpdateSpeechSessionError, UpdateSpeechSessionResponse } from '../types.gen';
+import { createAgent, createSpeechClientSecret, createSpeechSession, deleteAgent, deleteConciergeDoctorSession, deleteSpeechSession, ensureConciergeDoctorAgent, getAgent, getConciergeDoctorSession, getSpeechSession, listAgents, listConciergeDoctorSessions, listSpeechSessions, mockConciergePharmacyRequest, mockConciergeScheduleFollowUp, type Options, startConciergeDoctorSession, updateAgent, updateConciergeDoctorSession, updateSpeechSession } from '../sdk.gen';
+import type { CreateAgentData, CreateAgentResponse, CreateSpeechClientSecretData, CreateSpeechClientSecretError, CreateSpeechClientSecretResponse, CreateSpeechSessionData, CreateSpeechSessionResponse, DeleteAgentData, DeleteAgentError, DeleteAgentResponse, DeleteConciergeDoctorSessionData, DeleteConciergeDoctorSessionError, DeleteConciergeDoctorSessionResponse, DeleteSpeechSessionData, DeleteSpeechSessionError, DeleteSpeechSessionResponse, EnsureConciergeDoctorAgentData, EnsureConciergeDoctorAgentError, EnsureConciergeDoctorAgentResponse, GetAgentData, GetAgentError, GetAgentResponse, GetConciergeDoctorSessionData, GetConciergeDoctorSessionError, GetConciergeDoctorSessionResponse, GetSpeechSessionData, GetSpeechSessionError, GetSpeechSessionResponse, ListAgentsData, ListAgentsResponse, ListConciergeDoctorSessionsData, ListConciergeDoctorSessionsResponse, ListSpeechSessionsData, ListSpeechSessionsResponse, MockConciergePharmacyRequestData, MockConciergePharmacyRequestResponse, MockConciergeScheduleFollowUpData, MockConciergeScheduleFollowUpResponse, StartConciergeDoctorSessionData, StartConciergeDoctorSessionError, StartConciergeDoctorSessionResponse, UpdateAgentData, UpdateAgentError, UpdateAgentResponse, UpdateConciergeDoctorSessionData, UpdateConciergeDoctorSessionError, UpdateConciergeDoctorSessionResponse, UpdateSpeechSessionData, UpdateSpeechSessionError, UpdateSpeechSessionResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -220,6 +220,144 @@ export const updateSpeechSessionMutation = (options?: Partial<Options<UpdateSpee
     const mutationOptions: UseMutationOptions<UpdateSpeechSessionResponse, UpdateSpeechSessionError, Options<UpdateSpeechSessionData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await updateSpeechSession({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Ensure the ElevenLabs concierge doctor agent exists
+ */
+export const ensureConciergeDoctorAgentMutation = (options?: Partial<Options<EnsureConciergeDoctorAgentData>>): UseMutationOptions<EnsureConciergeDoctorAgentResponse, EnsureConciergeDoctorAgentError, Options<EnsureConciergeDoctorAgentData>> => {
+    const mutationOptions: UseMutationOptions<EnsureConciergeDoctorAgentResponse, EnsureConciergeDoctorAgentError, Options<EnsureConciergeDoctorAgentData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await ensureConciergeDoctorAgent({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const listConciergeDoctorSessionsQueryKey = (options?: Options<ListConciergeDoctorSessionsData>) => createQueryKey('listConciergeDoctorSessions', options);
+
+/**
+ * List concierge doctor sessions
+ */
+export const listConciergeDoctorSessionsOptions = (options?: Options<ListConciergeDoctorSessionsData>) => queryOptions<ListConciergeDoctorSessionsResponse, DefaultError, ListConciergeDoctorSessionsResponse, ReturnType<typeof listConciergeDoctorSessionsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listConciergeDoctorSessions({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listConciergeDoctorSessionsQueryKey(options)
+});
+
+/**
+ * Delete a concierge doctor session
+ */
+export const deleteConciergeDoctorSessionMutation = (options?: Partial<Options<DeleteConciergeDoctorSessionData>>): UseMutationOptions<DeleteConciergeDoctorSessionResponse, DeleteConciergeDoctorSessionError, Options<DeleteConciergeDoctorSessionData>> => {
+    const mutationOptions: UseMutationOptions<DeleteConciergeDoctorSessionResponse, DeleteConciergeDoctorSessionError, Options<DeleteConciergeDoctorSessionData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteConciergeDoctorSession({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getConciergeDoctorSessionQueryKey = (options: Options<GetConciergeDoctorSessionData>) => createQueryKey('getConciergeDoctorSession', options);
+
+/**
+ * Get a concierge doctor session
+ */
+export const getConciergeDoctorSessionOptions = (options: Options<GetConciergeDoctorSessionData>) => queryOptions<GetConciergeDoctorSessionResponse, GetConciergeDoctorSessionError, GetConciergeDoctorSessionResponse, ReturnType<typeof getConciergeDoctorSessionQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getConciergeDoctorSession({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getConciergeDoctorSessionQueryKey(options)
+});
+
+/**
+ * Update a concierge doctor session
+ */
+export const updateConciergeDoctorSessionMutation = (options?: Partial<Options<UpdateConciergeDoctorSessionData>>): UseMutationOptions<UpdateConciergeDoctorSessionResponse, UpdateConciergeDoctorSessionError, Options<UpdateConciergeDoctorSessionData>> => {
+    const mutationOptions: UseMutationOptions<UpdateConciergeDoctorSessionResponse, UpdateConciergeDoctorSessionError, Options<UpdateConciergeDoctorSessionData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateConciergeDoctorSession({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Start a concierge doctor conversation
+ */
+export const startConciergeDoctorSessionMutation = (options?: Partial<Options<StartConciergeDoctorSessionData>>): UseMutationOptions<StartConciergeDoctorSessionResponse, StartConciergeDoctorSessionError, Options<StartConciergeDoctorSessionData>> => {
+    const mutationOptions: UseMutationOptions<StartConciergeDoctorSessionResponse, StartConciergeDoctorSessionError, Options<StartConciergeDoctorSessionData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await startConciergeDoctorSession({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Mock retail pharmacy portal action
+ */
+export const mockConciergePharmacyRequestMutation = (options?: Partial<Options<MockConciergePharmacyRequestData>>): UseMutationOptions<MockConciergePharmacyRequestResponse, DefaultError, Options<MockConciergePharmacyRequestData>> => {
+    const mutationOptions: UseMutationOptions<MockConciergePharmacyRequestResponse, DefaultError, Options<MockConciergePharmacyRequestData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await mockConciergePharmacyRequest({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Mock provider follow-up scheduling
+ */
+export const mockConciergeScheduleFollowUpMutation = (options?: Partial<Options<MockConciergeScheduleFollowUpData>>): UseMutationOptions<MockConciergeScheduleFollowUpResponse, DefaultError, Options<MockConciergeScheduleFollowUpData>> => {
+    const mutationOptions: UseMutationOptions<MockConciergeScheduleFollowUpResponse, DefaultError, Options<MockConciergeScheduleFollowUpData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await mockConciergeScheduleFollowUp({
                 ...options,
                 ...fnOptions,
                 throwOnError: true

@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateAgentData, CreateAgentResponses, CreateSpeechClientSecretData, CreateSpeechClientSecretErrors, CreateSpeechClientSecretResponses, CreateSpeechSessionData, CreateSpeechSessionResponses, DeleteAgentData, DeleteAgentErrors, DeleteAgentResponses, DeleteSpeechSessionData, DeleteSpeechSessionErrors, DeleteSpeechSessionResponses, GetAgentData, GetAgentErrors, GetAgentResponses, GetSpeechSessionData, GetSpeechSessionErrors, GetSpeechSessionResponses, ListAgentsData, ListAgentsResponses, ListSpeechSessionsData, ListSpeechSessionsResponses, UpdateAgentData, UpdateAgentErrors, UpdateAgentResponses, UpdateSpeechSessionData, UpdateSpeechSessionErrors, UpdateSpeechSessionResponses } from './types.gen';
+import type { CreateAgentData, CreateAgentResponses, CreateSpeechClientSecretData, CreateSpeechClientSecretErrors, CreateSpeechClientSecretResponses, CreateSpeechSessionData, CreateSpeechSessionResponses, DeleteAgentData, DeleteAgentErrors, DeleteAgentResponses, DeleteConciergeDoctorSessionData, DeleteConciergeDoctorSessionErrors, DeleteConciergeDoctorSessionResponses, DeleteSpeechSessionData, DeleteSpeechSessionErrors, DeleteSpeechSessionResponses, EnsureConciergeDoctorAgentData, EnsureConciergeDoctorAgentErrors, EnsureConciergeDoctorAgentResponses, GetAgentData, GetAgentErrors, GetAgentResponses, GetConciergeDoctorSessionData, GetConciergeDoctorSessionErrors, GetConciergeDoctorSessionResponses, GetSpeechSessionData, GetSpeechSessionErrors, GetSpeechSessionResponses, ListAgentsData, ListAgentsResponses, ListConciergeDoctorSessionsData, ListConciergeDoctorSessionsResponses, ListSpeechSessionsData, ListSpeechSessionsResponses, MockConciergePharmacyRequestData, MockConciergePharmacyRequestResponses, MockConciergeScheduleFollowUpData, MockConciergeScheduleFollowUpResponses, StartConciergeDoctorSessionData, StartConciergeDoctorSessionErrors, StartConciergeDoctorSessionResponses, UpdateAgentData, UpdateAgentErrors, UpdateAgentResponses, UpdateConciergeDoctorSessionData, UpdateConciergeDoctorSessionErrors, UpdateConciergeDoctorSessionResponses, UpdateSpeechSessionData, UpdateSpeechSessionErrors, UpdateSpeechSessionResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -101,6 +101,81 @@ export const getSpeechSession = <ThrowOnError extends boolean = false>(options: 
  */
 export const updateSpeechSession = <ThrowOnError extends boolean = false>(options: Options<UpdateSpeechSessionData, ThrowOnError>): RequestResult<UpdateSpeechSessionResponses, UpdateSpeechSessionErrors, ThrowOnError> => (options.client ?? client).patch<UpdateSpeechSessionResponses, UpdateSpeechSessionErrors, ThrowOnError>({
     url: '/speech-sessions/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Ensure the ElevenLabs concierge doctor agent exists
+ */
+export const ensureConciergeDoctorAgent = <ThrowOnError extends boolean = false>(options?: Options<EnsureConciergeDoctorAgentData, ThrowOnError>): RequestResult<EnsureConciergeDoctorAgentResponses, EnsureConciergeDoctorAgentErrors, ThrowOnError> => (options?.client ?? client).post<EnsureConciergeDoctorAgentResponses, EnsureConciergeDoctorAgentErrors, ThrowOnError>({
+    url: '/concierge-doctor/ensure-agent',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers
+    }
+});
+
+/**
+ * List concierge doctor sessions
+ */
+export const listConciergeDoctorSessions = <ThrowOnError extends boolean = false>(options?: Options<ListConciergeDoctorSessionsData, ThrowOnError>): RequestResult<ListConciergeDoctorSessionsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListConciergeDoctorSessionsResponses, unknown, ThrowOnError>({ url: '/concierge-doctor/sessions', ...options });
+
+/**
+ * Delete a concierge doctor session
+ */
+export const deleteConciergeDoctorSession = <ThrowOnError extends boolean = false>(options: Options<DeleteConciergeDoctorSessionData, ThrowOnError>): RequestResult<DeleteConciergeDoctorSessionResponses, DeleteConciergeDoctorSessionErrors, ThrowOnError> => (options.client ?? client).delete<DeleteConciergeDoctorSessionResponses, DeleteConciergeDoctorSessionErrors, ThrowOnError>({ url: '/concierge-doctor/sessions/{id}', ...options });
+
+/**
+ * Get a concierge doctor session
+ */
+export const getConciergeDoctorSession = <ThrowOnError extends boolean = false>(options: Options<GetConciergeDoctorSessionData, ThrowOnError>): RequestResult<GetConciergeDoctorSessionResponses, GetConciergeDoctorSessionErrors, ThrowOnError> => (options.client ?? client).get<GetConciergeDoctorSessionResponses, GetConciergeDoctorSessionErrors, ThrowOnError>({ url: '/concierge-doctor/sessions/{id}', ...options });
+
+/**
+ * Update a concierge doctor session
+ */
+export const updateConciergeDoctorSession = <ThrowOnError extends boolean = false>(options: Options<UpdateConciergeDoctorSessionData, ThrowOnError>): RequestResult<UpdateConciergeDoctorSessionResponses, UpdateConciergeDoctorSessionErrors, ThrowOnError> => (options.client ?? client).patch<UpdateConciergeDoctorSessionResponses, UpdateConciergeDoctorSessionErrors, ThrowOnError>({
+    url: '/concierge-doctor/sessions/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Start a concierge doctor conversation
+ */
+export const startConciergeDoctorSession = <ThrowOnError extends boolean = false>(options?: Options<StartConciergeDoctorSessionData, ThrowOnError>): RequestResult<StartConciergeDoctorSessionResponses, StartConciergeDoctorSessionErrors, ThrowOnError> => (options?.client ?? client).post<StartConciergeDoctorSessionResponses, StartConciergeDoctorSessionErrors, ThrowOnError>({
+    url: '/concierge-doctor/sessions/start',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers
+    }
+});
+
+/**
+ * Mock retail pharmacy portal action
+ */
+export const mockConciergePharmacyRequest = <ThrowOnError extends boolean = false>(options: Options<MockConciergePharmacyRequestData, ThrowOnError>): RequestResult<MockConciergePharmacyRequestResponses, unknown, ThrowOnError> => (options.client ?? client).post<MockConciergePharmacyRequestResponses, unknown, ThrowOnError>({
+    url: '/concierge-doctor/mocks/pharmacy',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Mock provider follow-up scheduling
+ */
+export const mockConciergeScheduleFollowUp = <ThrowOnError extends boolean = false>(options: Options<MockConciergeScheduleFollowUpData, ThrowOnError>): RequestResult<MockConciergeScheduleFollowUpResponses, unknown, ThrowOnError> => (options.client ?? client).post<MockConciergeScheduleFollowUpResponses, unknown, ThrowOnError>({
+    url: '/concierge-doctor/mocks/schedule',
     ...options,
     headers: {
         'Content-Type': 'application/json',

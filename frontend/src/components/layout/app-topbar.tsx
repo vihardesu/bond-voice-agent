@@ -8,6 +8,7 @@ import { cx } from "@/utils/cx";
 const links = [
   { href: "/", label: "Agents" },
   { href: "/speech", label: "Speech" },
+  { href: "/concierge", label: "Concierge" },
 ] as const;
 
 export function AppTopbar() {

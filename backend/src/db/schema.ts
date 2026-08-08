@@ -4,3 +4,11 @@ export {
   type NewSpeechSession,
   type SpeechSession,
 } from "../modules/speech-sessions/schema.js";
+export {
+  conciergeConfig,
+  conciergeSessions,
+  type ConciergeConfig,
+  type ConciergeSession,
+  type NewConciergeConfig,
+  type NewConciergeSession,
+} from "../modules/concierge-doctor/schema.js";
