@@ -10,9 +10,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Cursor Cloud specific instructions
 
-`bond-voice-agent` is a single Next.js 16 app (App Router, React 19, Tailwind CSS v4, Turbopack). There is no backend, database, or other service — just the web app. Dependencies are installed by the startup update script (`npm ci`), so they are already present when a session begins.
+This package is the Next.js 16 frontend (App Router, React 19, Tailwind CSS v4, Turbopack) under `frontend/` in the `bond-voice-agent` monorepo. The Hono API lives in sibling `backend/`. Dependencies for this package are installed with `npm ci` from `frontend/`.
 
-Standard commands live in `package.json` scripts; use them as written:
+Standard commands live in `package.json` scripts; run them from `frontend/`:
 - Dev server: `npm run dev` (serves http://localhost:3000). Turbopack hot-reload picks up edits under `src/` automatically.
 - Lint: `npm run lint` (flat ESLint config in `eslint.config.mjs`).
 - Build: `npm run build`.
